@@ -2,6 +2,7 @@ import React from 'react';
 import { View, ViewProps } from 'react-native';
 import { Button, ButtonGroup, Icon, IconElement, IconProps } from '@ui-kitten/components';
 import { styles } from '../../styles';
+import { attemptColors } from '../constants';
 
 const CancelIcon = (props: IconProps): IconElement => (
   <Icon
@@ -49,13 +50,13 @@ export const RouteCardFooter = ({ addAttempt, undoAttempt, status, attempts, ...
   const renderStatusButton = () => {
     switch (status) {
       case 'initial':
-        return <Button accessoryLeft={FlashIcon} onPress={() => addAttempt('flash')} />;
+        return <Button style={{ backgroundColor: attemptColors.flash }} accessoryLeft={FlashIcon} onPress={() => addAttempt('flash')} />;
       case 'checked':
-        return <Button accessoryLeft={CheckIcon} onPress={() => addAttempt('send')} />;
+        return <Button style={{ backgroundColor: attemptColors.send }} accessoryLeft={CheckIcon} onPress={() => addAttempt('send')} />;
       case 'done':
-        return <Button accessoryLeft={DoneAllIcon} onPress={() => addAttempt('send')} />;
+        return <Button style={{ backgroundColor: attemptColors.repeat }} accessoryLeft={DoneAllIcon} onPress={() => addAttempt('send')} />;
       default:
-        return <Button accessoryLeft={FlashIcon} onPress={() => addAttempt('flash')} />;
+        return <Button style={{ backgroundColor: attemptColors.flash }} accessoryLeft={FlashIcon} onPress={() => addAttempt('flash')} />;
     }
   };
 
@@ -65,8 +66,8 @@ export const RouteCardFooter = ({ addAttempt, undoAttempt, status, attempts, ...
       style={[props.style, styles.footerContainer]}
     >
       <ButtonGroup style={styles.buttonGroup} size='small'>
-        <Button accessoryLeft={UndoIcon} onPress={undoAttempt} disabled={attempts.length === 0} style={styles.undoButton} />
-        <Button accessoryLeft={CancelIcon} onPress={() => addAttempt('fail')} />
+        <Button accessoryLeft={UndoIcon} onPress={undoAttempt} disabled={attempts.length === 0}           style={attempts.length === 0 ? styles.disabledUndoButton : styles.undoButton} />
+        <Button style={{ backgroundColor: attemptColors.fail }} accessoryLeft={CancelIcon} onPress={() => addAttempt('fail')} />
         {renderStatusButton()}
       </ButtonGroup>
     </View>

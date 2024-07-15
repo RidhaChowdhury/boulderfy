@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { attemptColors } from './screens/constants';
 
 export const styles = StyleSheet.create({
   container: {
@@ -88,6 +89,11 @@ export const styles = StyleSheet.create({
     marginTop: 8,
   },
   undoButton: {
-    opacity: 0.7, // Adjust the opacity as needed to make it dimmer
+    opacity: 0.8, // Adjust the opacity as needed to make it dimmer
+    backgroundColor: '#ADD8E6',
+  },
+  disabledUndoButton: {
+    opacity: 0.3, // Adjust the opacity as needed to make it dimmer
+    backgroundColor: '#D3D3D3',
   },
 });
