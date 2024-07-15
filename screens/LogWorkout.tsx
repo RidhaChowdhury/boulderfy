@@ -40,12 +40,21 @@ const DoneAllIcon = (props: IconProps): IconElement => (
   />
 );
 
+const UndoIcon = (props: IconProps): IconElement => (
+  <Icon
+    {...props}
+    name='undo'
+  />
+);
+
 type FooterProps = ViewProps & {
   addAttempt: (attempt: string) => void;
+  undoAttempt: () => void;
   status: string;
+  attempts: string[];
 };
 
-const Footer = ({ addAttempt, status, ...props }: FooterProps): React.ReactElement => {
+const Footer = ({ addAttempt, undoAttempt, status, attempts, ...props }: FooterProps): React.ReactElement => {
   const renderStatusButton = () => {
     switch (status) {
       case 'initial':
@@ -65,6 +74,7 @@ const Footer = ({ addAttempt, status, ...props }: FooterProps): React.ReactEleme
       style={[props.style, styles.footerContainer]}
     >
       <ButtonGroup style={styles.buttonGroup}>
+        <Button accessoryLeft={UndoIcon} onPress={undoAttempt} disabled={attempts.length === 0} style={styles.undoButton} />
         <Button accessoryLeft={CancelIcon} onPress={() => addAttempt('fail')} />
         {renderStatusButton()}
       </ButtonGroup>
@@ -105,7 +115,7 @@ const LogWorkoutScreen = () => {
   const addAttempt = (index: number, attempt: string) => {
     const newRoutes = [...routes];
     const currentAttempts = newRoutes[index].attempts;
-  
+
     if (attempt === 'send') {
       // If it's the first checkmark, add it as is
       if (!currentAttempts.includes('send') && !currentAttempts.includes('repeat') && !currentAttempts.includes('flash')) {
@@ -121,9 +131,19 @@ const LogWorkoutScreen = () => {
       // For 'fail' or any other attempt, just add it to the list
       currentAttempts.push(attempt);
     }
-  
+
     setRoutes(newRoutes);
-  };  
+  };
+
+  const undoAttempt = (index: number) => {
+    const newRoutes = [...routes];
+    const currentAttempts = newRoutes[index].attempts;
+    if (currentAttempts.length > 0) {
+      currentAttempts.pop();
+      setRoutes(newRoutes);
+    }
+  };
+
   const pulseIconRef = useRef<Icon<Partial<IconProps>>>(null);
 
   const PlusIcon = (props: IconProps): IconElement => (
@@ -172,7 +192,7 @@ const LogWorkoutScreen = () => {
       </View>
       <ScrollView style={styles.scrollView}>
         {routes.map((route, index) => (
-          <Card key={index} style={styles.routeContainer} disabled={true} footer={() => <Footer addAttempt={(attempt) => addAttempt(index, attempt)} status={getStatus(route.attempts)} />}>
+          <Card key={index} style={styles.routeContainer} disabled={true} footer={() => <Footer addAttempt={(attempt) => addAttempt(index, attempt)} undoAttempt={() => undoAttempt(index)} status={getStatus(route.attempts)} attempts={route.attempts} />}>
             <View style={styles.keyRouteDetails}>
               <Input
                 style={styles.routeNameInput}
@@ -200,16 +220,16 @@ const LogWorkoutScreen = () => {
                   key={attemptIndex}
                   name={
                     attempt === 'fail' ? 'close' :
-                    attempt === 'flash' ? 'flash-outline' :
-                    attempt === 'repeat' ? 'done-all-outline' :
-                    'checkmark'
+                      attempt === 'flash' ? 'flash-outline' :
+                        attempt === 'repeat' ? 'done-all-outline' :
+                          'checkmark'
                   }
                   style={styles.attemptIcon}
                   fill={
                     attempt === 'fail' ? '#FF999F' :
-                    attempt === 'flash' ? '#FFD700' :
-                    (attempt === 'repeat' || attempt === 'send') ? '#99D3B4' :
-                    '#FFFFFF'
+                      attempt === 'flash' ? '#FFD700' :
+                        (attempt === 'repeat' || attempt === 'send') ? '#99D3B4' :
+                          '#FFFFFF'
                   }
                 />
               ))}
@@ -226,12 +246,12 @@ const LogWorkoutScreen = () => {
         ))}
       </ScrollView>
       <View style={styles.buttonContainer}>
+        <Button style={styles.button}>Save Workout</Button>
         <Button
           style={styles.circularButton}
           accessoryLeft={PlusIcon}
           onPress={handleAddRoute}
         />
-        <Button style={styles.button}>Save Workout</Button>
       </View>
     </Layout>
   );
@@ -324,6 +344,9 @@ const styles = StyleSheet.create({
   buttonGroup: {
     margin: 2,
   },
+  undoButton: {
+    opacity: 0.5, // Adjust the opacity as needed
+  },  
 });
 
 export default LogWorkoutScreen;
