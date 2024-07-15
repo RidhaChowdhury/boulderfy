@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
-import { Layout, Text, Input, Button, Datepicker, Select, SelectItem, IndexPath, Card } from '@ui-kitten/components';
+import { Layout, Text, Input, Button, Datepicker, Select, SelectItem, IndexPath, Card, Icon, IconElement, IconProps } from '@ui-kitten/components';
 
 type Route = {
   name: string;
@@ -34,6 +34,24 @@ const LogWorkoutScreen = () => {
 
     const grade = grades[nextIndex.row];
     handleRouteChange(index, 'grade', grade);
+  };
+
+  const pulseIconRef = useRef<Icon<Partial<IconProps>>>(null);
+
+  const PlusIcon = (props: IconProps): IconElement => (
+    <Icon
+      {...props}
+      ref={pulseIconRef}
+      animation='pulse'
+      name='plus-outline'
+    />
+  );
+
+  const handleAddRoute = () => {
+    if (pulseIconRef.current) {
+      pulseIconRef.current.startAnimation();
+    }
+    addRoute();
   };
 
   return (
@@ -75,7 +93,6 @@ const LogWorkoutScreen = () => {
                 {grades.map((grade, idx) => (
                   <SelectItem key={idx} title={grade} />
                 ))}
-                
               </Select>
             </View>
             <Input
@@ -90,7 +107,11 @@ const LogWorkoutScreen = () => {
         ))}
       </ScrollView>
       <View style={styles.buttonContainer}>
-        <Button style={styles.button} onPress={addRoute}>Add Route</Button>
+        <Button
+          style={styles.circularButton}
+          accessoryLeft={PlusIcon}
+          onPress={handleAddRoute}
+        />
         <Button style={styles.button}>Save Workout</Button>
       </View>
     </Layout>
@@ -107,6 +128,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginVertical: 8,
+    gap: 16, // Add gap between elements
   },
   scrollView: {
     flex: 1,
@@ -117,7 +139,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
-    gap: 16,
+    gap: 16, // Add gap between elements
   },
   routeNameInput: {
     flex: 3, // Takes up most of the space
@@ -132,7 +154,6 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    marginRight: 8,
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -143,11 +164,20 @@ const styles = StyleSheet.create({
     right: 16,
     backgroundColor: '#222B45',
     padding: 8,
+    gap: 16, // Add gap between buttons
   },
   button: {
     flex: 1,
-    marginHorizontal: 8,
+    borderRadius: 16,
+  },
+  circularButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
+
 
 export default LogWorkoutScreen;
