@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, ScrollView } from 'react-native';
 import { Layout, Text, Input, Button, Datepicker, Select, SelectItem, IndexPath, Card } from '@ui-kitten/components';
 
 type Route = {
@@ -13,7 +13,7 @@ const grades = ['V0', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10
 const LogWorkoutScreen = () => {
   const [date, setDate] = useState(new Date());
   const [location, setLocation] = useState('');
-  const [routes, setRoutes] = useState<Route[]>([{ name: '', grade: 'V0', attempts: '',}]);
+  const [routes, setRoutes] = useState<Route[]>([{ name: '', grade: 'V0', attempts: '' }]);
   const [selectedIndexes, setSelectedIndexes] = useState<IndexPath[]>(routes.map(() => new IndexPath(0)));
 
   const addRoute = () => {
@@ -54,41 +54,45 @@ const LogWorkoutScreen = () => {
           onChangeText={nextValue => setLocation(nextValue)}
         />
       </View>
-      {routes.map((route, index) => (
-        <Card key={index} style={styles.routeContainer} disabled={true}>
-          <View style={styles.keyRouteDetails}>
+      <ScrollView style={styles.scrollView}>
+        {routes.map((route, index) => (
+          <Card key={index} style={styles.routeContainer} disabled={true}>
+            <View style={styles.keyRouteDetails}>
+              <Input
+                style={styles.routeNameInput}
+                label='Route Name'
+                placeholder='Enter route name'
+                value={route.name}
+                onChangeText={nextValue => handleRouteChange(index, 'name', nextValue)}
+              />
+              <Select
+                style={styles.gradeInput}
+                label='Grade'
+                placeholder={grades[0]}
+                value={route.grade}
+                selectedIndex={selectedIndexes[index]}
+                onSelect={nextIndex => handleGradeSelect(index, nextIndex as IndexPath)}>
+                {grades.map((grade, idx) => (
+                  <SelectItem key={idx} title={grade} />
+                ))}
+                
+              </Select>
+            </View>
             <Input
-              style={styles.routeNameInput}
-              label='Route Name'
-              placeholder='Enter route name'
-              value={route.name}
-              onChangeText={nextValue => handleRouteChange(index, 'name', nextValue)}
+              style={styles.input}
+              label='Attempts'
+              placeholder='Enter number of attempts'
+              value={route.attempts}
+              keyboardType='numeric'
+              onChangeText={nextValue => handleRouteChange(index, 'attempts', nextValue)}
             />
-            <Select
-              style={styles.gradeInput}
-              label='Grade'
-              placeholder={grades[0]}
-              value={route.grade}
-              selectedIndex={selectedIndexes[index]}
-              onSelect={nextIndex => handleGradeSelect(index, nextIndex as IndexPath)}>
-              {grades.map((grade, idx) => (
-                <SelectItem key={idx} title={grade} />
-              ))}
-              
-            </Select>
-          </View>
-          <Input
-            style={styles.input}
-            label='Attempts'
-            placeholder='Enter number of attempts'
-            value={route.attempts}
-            keyboardType='numeric'
-            onChangeText={nextValue => handleRouteChange(index, 'attempts', nextValue)}
-          />
-        </Card>
-      ))}
-      <Button style={styles.button} onPress={addRoute}>Add Route</Button>
-      <Button style={styles.button}>Save Workout</Button>
+          </Card>
+        ))}
+      </ScrollView>
+      <View style={styles.buttonContainer}>
+        <Button style={styles.button} onPress={addRoute}>Add Route</Button>
+        <Button style={styles.button}>Save Workout</Button>
+      </View>
     </Layout>
   );
 };
@@ -103,6 +107,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginVertical: 8,
+  },
+  scrollView: {
+    flex: 1,
+    marginBottom: 60, // Ensure there is space for the buttons
   },
   keyRouteDetails: {
     flexDirection: 'row',
@@ -126,8 +134,19 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 8,
   },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    position: 'absolute',
+    bottom: 16,
+    left: 16,
+    right: 16,
+    backgroundColor: '#222B45',
+    padding: 8,
+  },
   button: {
-    marginVertical: 8,
+    flex: 1,
+    marginHorizontal: 8,
   },
 });
 
