@@ -9,10 +9,18 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@eva-design/eva": "^2.2.0",
+    "@expo/metro-runtime": "~3.2.1",
+    "@ui-kitten/components": "^5.3.1",
     "expo": "~51.0.20",
     "expo-status-bar": "~1.12.1",
     "react": "18.2.0",
-    "react-native": "0.74.3"
+    "react-dom": "18.2.0",
+    "react-native": "0.74.3",
+    "react-native-gesture-handler": "^2.17.1",
+    "react-native-reanimated": "^3.14.0",
+    "react-native-svg": "15.2.0",
+    "react-native-web": "~0.19.10"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
