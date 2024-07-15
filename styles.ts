@@ -17,9 +17,6 @@ export const styles = StyleSheet.create({
     marginBottom: 60, // Ensure there is space for the buttons
   },
   customHeader: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    backgroundColor: 'transparent',
     alignItems: 'flex-start', // Align text to the left
   },
   headerText: {
@@ -30,8 +27,6 @@ export const styles = StyleSheet.create({
     marginVertical: 8,
     padding: 16,
     borderRadius: 8,
-    borderWidth: 1, // Add border
-    borderColor: '#FFFFFF', // Border color
     backgroundColor: '#1A2138', // Adjust as needed
   },
   input: {
