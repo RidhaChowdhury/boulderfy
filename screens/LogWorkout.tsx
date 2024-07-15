@@ -1,86 +1,16 @@
-import React, { useRef, useState } from 'react';
-import { View, StyleSheet, ScrollView, ViewProps } from 'react-native';
-import { Layout, Text, Input, Button, Datepicker, Select, SelectItem, IndexPath, Card, Icon, IconElement, IconProps, ButtonGroup } from '@ui-kitten/components';
+import React, { useRef, useState, MutableRefObject } from 'react';
+import { View, ScrollView } from 'react-native';
+import { Layout, Text, Input, Button, Datepicker, Select, SelectItem, IndexPath, Card, Icon, IconElement, IconProps } from '@ui-kitten/components';
+import { Route, grades, attemptColors } from './constants';
+import { RouteCardFooter } from './components/RouteCardFooter';
+import { styles } from '../styles';
 
-type Route = {
-  name: string;
-  grade: string;
-  attempts: string[];
-};
-
-const ICONS_PER_ROW = 5; // Adjust this number as needed
-
-const grades = ['V0', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10'];
-
-const CancelIcon = (props: IconProps): IconElement => (
+const PlusIcon = (props: IconProps): IconElement => (
   <Icon
     {...props}
-    name='close'
+    name='plus-outline'
   />
 );
-
-const FlashIcon = (props: IconProps): IconElement => (
-  <Icon
-    {...props}
-    name='flash-outline'
-  />
-);
-
-const CheckIcon = (props: IconProps): IconElement => (
-  <Icon
-    {...props}
-    name='checkmark'
-  />
-);
-
-const DoneAllIcon = (props: IconProps): IconElement => (
-  <Icon
-    {...props}
-    name='done-all-outline'
-  />
-);
-
-const UndoIcon = (props: IconProps): IconElement => (
-  <Icon
-    {...props}
-    name='undo'
-  />
-);
-
-type FooterProps = ViewProps & {
-  addAttempt: (attempt: string) => void;
-  undoAttempt: () => void;
-  status: string;
-  attempts: string[];
-};
-
-const Footer = ({ addAttempt, undoAttempt, status, attempts, ...props }: FooterProps): React.ReactElement => {
-  const renderStatusButton = () => {
-    switch (status) {
-      case 'initial':
-        return <Button accessoryLeft={FlashIcon} onPress={() => addAttempt('flash')} />;
-      case 'checked':
-        return <Button accessoryLeft={CheckIcon} onPress={() => addAttempt('send')} />;
-      case 'done':
-        return <Button accessoryLeft={DoneAllIcon} onPress={() => addAttempt('send')} />;
-      default:
-        return <Button accessoryLeft={FlashIcon} onPress={() => addAttempt('flash')} />;
-    }
-  };
-
-  return (
-    <View
-      {...props}
-      style={[props.style, styles.footerContainer]}
-    >
-      <ButtonGroup style={styles.buttonGroup}>
-        <Button accessoryLeft={UndoIcon} onPress={undoAttempt} disabled={attempts.length === 0} style={styles.undoButton} />
-        <Button accessoryLeft={CancelIcon} onPress={() => addAttempt('fail')} />
-        {renderStatusButton()}
-      </ButtonGroup>
-    </View>
-  );
-};
 
 const LogWorkoutScreen = () => {
   const [date, setDate] = useState(new Date());
@@ -117,18 +47,14 @@ const LogWorkoutScreen = () => {
     const currentAttempts = newRoutes[index].attempts;
 
     if (attempt === 'send') {
-      // If it's the first checkmark, add it as is
       if (!currentAttempts.includes('send') && !currentAttempts.includes('repeat') && !currentAttempts.includes('flash')) {
         currentAttempts.push('send');
       } else {
-        // If there's already a checkmark or done-all, add 'repeat'
         currentAttempts.push('repeat');
       }
     } else if (attempt === 'flash') {
-      // If it's a flash, it's an immediate success
       newRoutes[index].attempts = ['flash'];
     } else {
-      // For 'fail' or any other attempt, just add it to the list
       currentAttempts.push(attempt);
     }
 
@@ -144,20 +70,11 @@ const LogWorkoutScreen = () => {
     }
   };
 
-  const pulseIconRef = useRef<Icon<Partial<IconProps>>>(null);
-
-  const PlusIcon = (props: IconProps): IconElement => (
-    <Icon
-      {...props}
-      ref={pulseIconRef}
-      animation='pulse'
-      name='plus-outline'
-    />
-  );
+  const pulseIconRef = useRef<IconElement>(null);
 
   const handleAddRoute = () => {
     if (pulseIconRef.current) {
-      pulseIconRef.current.startAnimation();
+      (pulseIconRef.current as any).startAnimation(); // Type assertion to bypass type checking
     }
     addRoute();
   };
@@ -192,7 +109,7 @@ const LogWorkoutScreen = () => {
       </View>
       <ScrollView style={styles.scrollView}>
         {routes.map((route, index) => (
-          <Card key={index} style={styles.routeContainer} disabled={true} footer={() => <Footer addAttempt={(attempt) => addAttempt(index, attempt)} undoAttempt={() => undoAttempt(index)} status={getStatus(route.attempts)} attempts={route.attempts} />}>
+          <Card key={index} style={styles.routeContainer} disabled={true} footer={() => <RouteCardFooter addAttempt={(attempt) => addAttempt(index, attempt)} undoAttempt={() => undoAttempt(index)} status={getStatus(route.attempts)} attempts={route.attempts} />}>
             <View style={styles.keyRouteDetails}>
               <Input
                 style={styles.routeNameInput}
@@ -225,12 +142,7 @@ const LogWorkoutScreen = () => {
                           'checkmark'
                   }
                   style={styles.attemptIcon}
-                  fill={
-                    attempt === 'fail' ? '#FF999F' :
-                      attempt === 'flash' ? '#FFD700' :
-                        (attempt === 'repeat' || attempt === 'send') ? '#99D3B4' :
-                          '#FFFFFF'
-                  }
+                  fill={attemptColors[attempt]}
                 />
               ))}
               {[0.2, 0.1, 0.05].map((opacity, index) => (
@@ -256,97 +168,5 @@ const LogWorkoutScreen = () => {
     </Layout>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: '#222B45', // Dark background color
-  },
-  headerFields: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginVertical: 8,
-    gap: 16, // Add gap between elements
-  },
-  scrollView: {
-    flex: 1,
-    marginBottom: 60, // Ensure there is space for the buttons
-  },
-  keyRouteDetails: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-    gap: 16, // Add gap between elements
-  },
-  routeNameInput: {
-    flex: 3, // Takes up most of the space
-  },
-  gradeInput: {
-    flex: 1, // Takes up less space
-  },
-  routeContainer: {
-    marginVertical: 8,
-    padding: 16,
-    borderRadius: 8,
-  },
-  input: {
-    flex: 1,
-  },
-  attemptsLabel: {
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  attemptsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 8,
-  },
-  attemptIcon: {
-    width: 24,
-    height: 24,
-    marginRight: 4,
-    marginBottom: 4,
-  },
-  dotIcon: {
-    opacity: 0.3, // Make the dots more subtle
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    position: 'absolute',
-    bottom: 16,
-    left: 16,
-    right: 16,
-    backgroundColor: '#222B45',
-    padding: 8,
-    gap: 16, // Add gap between buttons
-  },
-  button: {
-    flex: 1,
-    borderRadius: 16,
-  },
-  circularButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  footerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-  },
-  footerControl: {
-    marginHorizontal: 2,
-  },
-  buttonGroup: {
-    margin: 2,
-  },
-  undoButton: {
-    opacity: 0.5, // Adjust the opacity as needed
-  },  
-});
 
 export default LogWorkoutScreen;
