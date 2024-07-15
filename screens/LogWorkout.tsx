@@ -1,8 +1,9 @@
-import React, { useRef, useState, MutableRefObject } from 'react';
+import React, { useRef, useState } from 'react';
 import { View, ScrollView } from 'react-native';
-import { Layout, Text, Input, Button, Datepicker, Select, SelectItem, IndexPath, Card, Icon, IconElement, IconProps } from '@ui-kitten/components';
+import { Layout, Text, Input, Button, Datepicker, Card, Icon, IconElement, IconProps, IndexPath } from '@ui-kitten/components';
 import { Route, grades, attemptColors } from './constants';
 import { RouteCardFooter } from './components/RouteCardFooter';
+import { AddRouteModal } from './components/AddRouteModal';
 import { styles } from '../styles';
 
 const PlusIcon = (props: IconProps): IconElement => (
@@ -15,11 +16,12 @@ const PlusIcon = (props: IconProps): IconElement => (
 const LogWorkoutScreen = () => {
   const [date, setDate] = useState(new Date());
   const [location, setLocation] = useState('');
-  const [routes, setRoutes] = useState<Route[]>([{ name: '', grade: 'V0', attempts: [] }]);
-  const [selectedIndexes, setSelectedIndexes] = useState<IndexPath[]>(routes.map(() => new IndexPath(0)));
+  const [routes, setRoutes] = useState<Route[]>([]);
+  const [selectedIndexes, setSelectedIndexes] = useState<IndexPath[]>([]);
+  const [isModalVisible, setModalVisible] = useState(false);
 
-  const addRoute = () => {
-    setRoutes([...routes, { name: '', grade: 'V0', attempts: [] }]);
+  const handleAddRoute = (name: string, grade: string) => {
+    setRoutes([...routes, { name, grade, attempts: [] }]);
     setSelectedIndexes([...selectedIndexes, new IndexPath(0)]);
   };
 
@@ -72,11 +74,12 @@ const LogWorkoutScreen = () => {
 
   const pulseIconRef = useRef<IconElement>(null);
 
-  const handleAddRoute = () => {
-    if (pulseIconRef.current) {
-      (pulseIconRef.current as any).startAnimation(); // Type assertion to bypass type checking
-    }
-    addRoute();
+  const handleShowModal = () => {
+    setModalVisible(true);
+  };
+
+  const handleHideModal = () => {
+    setModalVisible(false);
   };
 
   const getStatus = (attempts: string[]) => {
@@ -108,63 +111,62 @@ const LogWorkoutScreen = () => {
         />
       </View>
       <ScrollView style={styles.scrollView}>
-        {routes.map((route, index) => (
-          <Card key={index} style={styles.routeContainer} disabled={true} footer={() => <RouteCardFooter addAttempt={(attempt) => addAttempt(index, attempt)} undoAttempt={() => undoAttempt(index)} status={getStatus(route.attempts)} attempts={route.attempts} />}>
-            <View style={styles.keyRouteDetails}>
-              <Input
-                style={styles.routeNameInput}
-                label='Route Name'
-                placeholder='Enter route name'
-                value={route.name}
-                onChangeText={nextValue => handleRouteChange(index, 'name', nextValue)}
-              />
-              <Select
-                style={styles.gradeInput}
-                label='Grade'
-                placeholder={grades[0]}
-                value={route.grade}
-                selectedIndex={selectedIndexes[index]}
-                onSelect={nextIndex => handleGradeSelect(index, nextIndex as IndexPath)}>
-                {grades.map((grade, idx) => (
-                  <SelectItem key={idx} title={grade} />
-                ))}
-              </Select>
-            </View>
-            <Text category='label' style={styles.attemptsLabel}>Attempts</Text>
-            <View style={styles.attemptsContainer}>
-              {route.attempts.map((attempt, attemptIndex) => (
-                <Icon
-                  key={attemptIndex}
-                  name={
-                    attempt === 'fail' ? 'close' :
+        {routes.length === 0 ? (
+          <Text category='p1' style={styles.noRoutesText}>No routes added yet. Press the plus button to add a new route.</Text>
+        ) : (
+          routes.map((route, index) => (
+            <Card key={index} style={styles.routeContainer} disabled={true}>
+              <View style={styles.customHeader}>
+                <Text category='h6' style={styles.headerText}>{route.name}</Text>
+                <Text category='s1' style={styles.headerText}>{route.grade}</Text>
+              </View>
+              <Text category='label' style={styles.attemptsLabel}>Attempts</Text>
+              <View style={styles.attemptsContainer}>
+                {route.attempts.map((attempt, attemptIndex) => (
+                  <Icon
+                    key={attemptIndex}
+                    name={
+                      attempt === 'fail' ? 'close' :
                       attempt === 'flash' ? 'flash-outline' :
-                        attempt === 'repeat' ? 'done-all-outline' :
-                          'checkmark'
-                  }
-                  style={styles.attemptIcon}
-                  fill={attemptColors[attempt]}
-                />
-              ))}
-              {[0.2, 0.1, 0.05].map((opacity, index) => (
-                <Icon
-                  key={`dot-${index}`}
-                  name='radio-button-off-outline'
-                  style={[styles.attemptIcon, { opacity }]}
-                  fill='#FFFFD0'
-                />
-              ))}
-            </View>
-          </Card>
-        ))}
+                      attempt === 'repeat' ? 'done-all-outline' :
+                      'checkmark'
+                    }
+                    style={styles.attemptIcon}
+                    fill={attemptColors[attempt]}
+                  />
+                ))}
+                {[0.2, 0.1, 0.05].map((opacity, index) => (
+                  <Icon
+                    key={`dot-${index}`}
+                    name='radio-button-off-outline'
+                    style={[styles.attemptIcon, { opacity }]}
+                    fill='#FFFFD0'
+                  />
+                ))}
+              </View>
+              <RouteCardFooter 
+                addAttempt={(attempt: string) => addAttempt(index, attempt)} 
+                undoAttempt={() => undoAttempt(index)} 
+                status={getStatus(route.attempts)} 
+                attempts={route.attempts} 
+              />
+            </Card>
+          ))
+        )}
       </ScrollView>
       <View style={styles.buttonContainer}>
         <Button style={styles.button}>Save Workout</Button>
         <Button
           style={styles.circularButton}
           accessoryLeft={PlusIcon}
-          onPress={handleAddRoute}
+          onPress={handleShowModal}
         />
       </View>
+      <AddRouteModal
+        visible={isModalVisible}
+        onClose={handleHideModal}
+        onAddRoute={handleAddRoute}
+      />
     </Layout>
   );
 };

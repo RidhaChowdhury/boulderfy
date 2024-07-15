@@ -1,5 +1,4 @@
 import { StyleSheet } from 'react-native';
-import { attemptColors } from './screens/constants';
 
 export const styles = StyleSheet.create({
   container: {
@@ -17,23 +16,23 @@ export const styles = StyleSheet.create({
     flex: 1,
     marginBottom: 60, // Ensure there is space for the buttons
   },
-  keyRouteDetails: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-    gap: 16, // Add gap between elements
+  customHeader: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    backgroundColor: 'transparent',
+    alignItems: 'flex-start', // Align text to the left
   },
-  routeNameInput: {
-    flex: 3, // Takes up most of the space
-  },
-  gradeInput: {
-    flex: 1, // Takes up less space
+  headerText: {
+    color: '#FFFFFF',
+    textAlign: 'left', // Align text to the left
   },
   routeContainer: {
     marginVertical: 8,
     padding: 16,
     borderRadius: 8,
+    borderWidth: 1, // Add border
+    borderColor: '#FFFFFF', // Border color
+    backgroundColor: '#1A2138', // Adjust as needed
   },
   input: {
     flex: 1,
@@ -41,6 +40,8 @@ export const styles = StyleSheet.create({
   attemptsLabel: {
     marginTop: 16,
     marginBottom: 8,
+    color: '#FFFFFF',
+    textAlign: 'left', // Align text to the left
   },
   attemptsContainer: {
     flexDirection: 'row',
@@ -66,6 +67,8 @@ export const styles = StyleSheet.create({
     backgroundColor: '#222B45',
     padding: 8,
     gap: 16, // Add gap between buttons
+    borderWidth: 0, // Remove border
+    borderColor: 'transparent', // Ensure border is transparent
   },
   button: {
     flex: 1,
@@ -81,6 +84,7 @@ export const styles = StyleSheet.create({
   footerContainer: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
+    borderTopWidth: 0, // Remove top border
   },
   footerControl: {
     marginHorizontal: 2,
@@ -89,11 +93,15 @@ export const styles = StyleSheet.create({
     marginTop: 8,
   },
   undoButton: {
-    opacity: 0.8, // Adjust the opacity as needed to make it dimmer
-    backgroundColor: '#ADD8E6',
+    opacity: 0.7, // Adjust the opacity as needed to make it dimmer
   },
   disabledUndoButton: {
-    opacity: 0.3, // Adjust the opacity as needed to make it dimmer
-    backgroundColor: '#D3D3D3',
+    backgroundColor: '#B0C4DE', // Light Steel Blue
+    opacity: 0.5,
+  },
+  noRoutesText: {
+    textAlign: 'center',
+    marginTop: 20,
+    color: '#fff',
   },
 });
