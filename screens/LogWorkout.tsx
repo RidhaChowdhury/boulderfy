@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { View, ScrollView } from 'react-native';
 import { Layout, Text, Input, Button, Datepicker, Card, Icon, IconElement, IconProps, IndexPath } from '@ui-kitten/components';
-import { Route, grades, attemptColors } from './constants';
+import { Route, grades, attemptColors, gradeColors } from './constants';
 import { RouteCardFooter } from './components/RouteCardFooter';
 import { AddRouteModal } from './components/AddRouteModal';
 import { styles } from '../styles';
@@ -118,7 +118,7 @@ const LogWorkoutScreen = () => {
             <Card key={index} style={styles.routeContainer} disabled={true}>
               <View style={styles.customHeader}>
                 <Text category='h6' style={styles.headerText}>{route.name}</Text>
-                <Text category='s1' style={styles.headerText}>{route.grade}</Text>
+                <Text category='s1' style={[styles.headerText, { color: gradeColors[route.grade] }]}>{route.grade}</Text>
               </View>
               <Text category='label' style={styles.attemptsLabel}>Attempts</Text>
               <View style={styles.attemptsContainer}>
