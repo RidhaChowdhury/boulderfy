@@ -4,6 +4,7 @@ import { Button, Input, Select, SelectItem, IndexPath, Text, useTheme } from '@u
 import BottomSheet from '@gorhom/bottom-sheet';
 import { grades } from '../constants';
 import CustomHandle from './CustomHandle'; // Import your custom handle
+import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator';
 
 type AddRouteModalProps = {
   visible: boolean;
@@ -38,9 +39,19 @@ export const AddRouteModal = ({ visible, onClose, onAddRoute, route }: AddRouteM
     }
   }, [visible]);
 
+  const generateRandomName = () => {
+    return uniqueNamesGenerator({
+      dictionaries: [adjectives, animals],
+      separator: ' ',
+      style: 'capital',
+      length: 2,
+    });
+  };
+
   const handleAddRoute = () => {
     const grade = grades[selectedIndex.row];
-    onAddRoute(routeName, grade);
+    const name = routeName.trim() !== '' ? routeName : generateRandomName();
+    onAddRoute(name, grade);
     setRouteName('');
     setSelectedIndex(new IndexPath(0));
     onClose();
