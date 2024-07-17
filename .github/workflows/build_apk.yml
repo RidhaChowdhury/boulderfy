@@ -1,0 +1,51 @@
+name: EAS Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Install and build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+          cache: npm
+
+      - name: Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build on EAS
+        run: eas build --platform android --non-interactive
+
+      - name: Download AAB from EAS
+        run: |
+          eas artifact:download --platform android --output=./build
+
+      - name: Download bundletool
+        run: |
+          curl -L https://github.com/google/bundletool/releases/download/1.8.0/bundletool-all-1.8.0.jar -o bundletool.jar
+
+      - name: Convert AAB to APK
+        run: |
+          java -jar bundletool.jar build-apks --bundle=./build/*.aab --output=./build/output.apks --mode=universal
+          unzip -p ./build/output.apks universal.apk > ./build/app-universal.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v2
+        with:
+          name: app-universal.apk
+          path: ./build/app-universal.apk
