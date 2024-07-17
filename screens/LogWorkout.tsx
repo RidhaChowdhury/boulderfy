@@ -13,16 +13,39 @@ const PlusIcon = (props: IconProps): IconElement => (
   />
 );
 
-const LogWorkoutScreen = () => {
+const EditIcon = (props: IconProps): IconElement => (
+  <Icon
+    {...props}
+    name='edit-2-outline'
+  />
+);
+
+const TrashIcon = (props: IconProps): IconElement => (
+  <Icon
+    {...props}
+    name='trash-2-outline'
+  />
+);
+
+const LogWorkoutScreen: React.FC = () => {
   const [date, setDate] = useState(new Date());
   const [location, setLocation] = useState('');
   const [routes, setRoutes] = useState<Route[]>([]);
   const [selectedIndexes, setSelectedIndexes] = useState<IndexPath[]>([]);
   const [isModalVisible, setModalVisible] = useState(false);
+  const [editRouteIndex, setEditRouteIndex] = useState<number | null>(null);
 
   const handleAddRoute = (name: string, grade: string) => {
-    setRoutes([...routes, { name, grade, attempts: [] }]);
-    setSelectedIndexes([...selectedIndexes, new IndexPath(0)]);
+    if (editRouteIndex !== null) {
+      const updatedRoutes = [...routes];
+      updatedRoutes[editRouteIndex] = { ...updatedRoutes[editRouteIndex], name, grade };
+      setRoutes(updatedRoutes);
+      setEditRouteIndex(null);
+    } else {
+      setRoutes([...routes, { name, grade, attempts: [] }]);
+      setSelectedIndexes([...selectedIndexes, new IndexPath(0)]);
+    }
+    setModalVisible(false);
   };
 
   const handleRouteChange = (index: number, key: keyof Route, value: string | string[]) => {
@@ -76,10 +99,22 @@ const LogWorkoutScreen = () => {
 
   const handleShowModal = () => {
     setModalVisible(true);
+    setEditRouteIndex(null); // Reset the edit index
+  };
+
+  const handleEditRoute = (index: number) => {
+    setEditRouteIndex(index);
+    setModalVisible(true);
+  };
+
+  const handleDeleteRoute = (index: number) => {
+    const updatedRoutes = routes.filter((_, i) => i !== index);
+    setRoutes(updatedRoutes);
   };
 
   const handleHideModal = () => {
     setModalVisible(false);
+    setEditRouteIndex(null);
   };
 
   const getStatus = (attempts: string[]) => {
@@ -116,9 +151,15 @@ const LogWorkoutScreen = () => {
         ) : (
           routes.map((route, index) => (
             <Card key={index} style={styles.routeContainer} disabled={true}>
-              <View style={styles.customHeader}>
-                <Text category='h6' style={styles.headerText}>{route.name}</Text>
-                <Text category='s1' style={[styles.headerText, { color: gradeColors[route.grade] }]}>{route.grade}</Text>
+              <View style={styles.headerFields}>
+                <View style={styles.customHeader}>
+                  <Text category='h6' style={styles.headerText}>{route.name}</Text>
+                  <Text category='s1' style={[styles.headerText, { color: gradeColors[route.grade] }]}>{route.grade}</Text>
+                </View>
+                <View style={styles.headerButtons}>
+                  <Button style={styles.editButton} accessoryLeft={EditIcon} onPress={() => handleEditRoute(index)} />
+                  <Button style={styles.editButton} accessoryLeft={TrashIcon} onPress={() => handleDeleteRoute(index)} />
+                </View>
               </View>
               <Text category='label' style={styles.attemptsLabel}>Attempts</Text>
               <View style={styles.attemptsContainer}>
@@ -166,6 +207,7 @@ const LogWorkoutScreen = () => {
         visible={isModalVisible}
         onClose={handleHideModal}
         onAddRoute={handleAddRoute}
+        route={editRouteIndex !== null ? routes[editRouteIndex] : undefined} // Pass route to modal if editing
       />
     </Layout>
   );

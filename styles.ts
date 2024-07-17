@@ -99,4 +99,15 @@ export const styles = StyleSheet.create({
     marginTop: 20,
     color: '#fff',
   },
+  headerButtons: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  editButton: {
+    backgroundColor: 'transparent',
+    borderColor: 'transparent',
+    padding: 0,
+    width: 32,
+    opacity: 0.7, // Adjust the opacity as needed
+  },
 });
