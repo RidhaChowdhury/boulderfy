@@ -1,30 +1,21 @@
 import React, { useRef, useState } from 'react';
-import { View, ScrollView } from 'react-native';
-import { Layout, Text, Input, Button, Datepicker, Card, Icon, IconElement, IconProps, IndexPath } from '@ui-kitten/components';
-import { Route, boulderGrades, topRopeGrades, attemptColors, gradeColors } from './constants';
+import { View, ScrollView, TouchableOpacity } from 'react-native';
+import { Layout, Text, Input, Button, Datepicker, Card, Icon, IconElement, IconProps, IndexPath, Divider } from '@ui-kitten/components';
+import { Route, boulderGrades, topRopeGrades, attemptColors, gradeColors, tagColors } from './constants';
 import { RouteCardFooter } from './components/RouteCardFooter';
 import { AddRouteModal } from './components/AddRouteModal';
 import { styles } from '../styles';
 
 const PlusIcon = (props: IconProps): IconElement => (
-  <Icon
-    {...props}
-    name='plus-outline'
-  />
+  <Icon {...props} name='plus-outline' />
 );
 
 const EditIcon = (props: IconProps): IconElement => (
-  <Icon
-    {...props}
-    name='edit-2-outline'
-  />
+  <Icon {...props} name='edit-2-outline' />
 );
 
 const TrashIcon = (props: IconProps): IconElement => (
-  <Icon
-    {...props}
-    name='trash-2-outline'
-  />
+  <Icon {...props} name='trash-2-outline' />
 );
 
 const LogWorkoutScreen: React.FC = () => {
@@ -34,10 +25,10 @@ const LogWorkoutScreen: React.FC = () => {
   const [selectedIndexes, setSelectedIndexes] = useState<IndexPath[]>([]);
   const [isModalVisible, setModalVisible] = useState(false);
   const [editRouteIndex, setEditRouteIndex] = useState<number | null>(null);
-  const [isTopRope, setIsTopRope] = useState(false); // Add the isTopRope state
+  const [isTopRope, setIsTopRope] = useState(false);
 
-  const handleAddRoute = (name: string, grade: string, color: string) => {
-    const newRoute = { name, grade, color, attempts: [] }; // Ensure color is included here
+  const handleAddRoute = (name: string, grade: string, color: string, tags: string[]) => {
+    const newRoute = { name, grade, color, tags, attempts: [] };
     if (editRouteIndex !== null) {
       const updatedRoutes = [...routes];
       updatedRoutes[editRouteIndex] = newRoute;
@@ -52,8 +43,6 @@ const LogWorkoutScreen: React.FC = () => {
     const newRoutes = [...routes];
     if (key === 'attempts') {
       newRoutes[index][key] = value as string[];
-    } else {
-      newRoutes[index][key] = value as string;
     }
     setRoutes(newRoutes);
   };
@@ -150,52 +139,66 @@ const LogWorkoutScreen: React.FC = () => {
           <Text category='p1' style={styles.noRoutesText}>No routes added yet. Press the plus button to add a new route.</Text>
         ) : (
           routes.map((route, index) => (
-            <Card key={index} style={styles.routeContainer} disabled={true}>
-              <View style={styles.headerFields}>
-                <View style={styles.customHeader}>
-                  <Text category='h6' style={styles.headerText}>{route.name}</Text>
-                  <View style={styles.gradeAndColorContainer}>
-                    {/* Color Circle */}
-                    <View style={[styles.colorCircle, { backgroundColor: route.color || '#FFFFFF' }]} />
-                    <Text category='s1' style={[styles.headerText, { color: gradeColors[route.grade] }]}>{route.grade}</Text>
+            <React.Fragment key={index}>
+              {index > 0 && <Divider style={{backgroundColor: '#323f67'}} />}
+              <Card style={styles.routeContainer} disabled={true}>
+                <View style={styles.headerFields}>
+                  <View style={styles.customHeader}>
+                    <Text category='h5' style={styles.headerText}>{route.name}</Text>
+                    <View style={styles.gradeAndColorContainer}>
+                      <View style={[styles.colorCircle, { backgroundColor: route.color || '#FFFFFF' }]} />
+                      <View style={styles.gradeChipContainer}>
+                        <Text style={[styles.gradeChip, { backgroundColor: gradeColors[route.grade] }]}>{route.grade}</Text>
+                      </View>
+                      {route.tags.length > 0 && 
+                      <View style={[styles.tagContainer]}>
+                        {route.tags.slice(0, 1).map((tag: string, tagIndex: number) => (
+                          <Text key={tagIndex} style={[styles.tagChip, { backgroundColor: tagColors[tag] }]}>{tag}</Text>
+                        ))}
+                        {route.tags.length > 1 && (
+                          <Text style={[styles.tagChip, {backgroundColor: '#AAAAAA'}]}>
+                            +{route.tags.length - 1}
+                          </Text>
+                        )}
+                      </View>}
+                    </View>
+                  </View>
+                  <View style={styles.headerButtons}>
+                    <Button style={styles.editButton} accessoryLeft={EditIcon} onPress={() => handleEditRoute(index)} />
+                    <Button style={styles.editButton} accessoryLeft={TrashIcon} onPress={() => handleDeleteRoute(index)} />
                   </View>
                 </View>
-                <View style={styles.headerButtons}>
-                  <Button style={styles.editButton} accessoryLeft={EditIcon} onPress={() => handleEditRoute(index)} />
-                  <Button style={styles.editButton} accessoryLeft={TrashIcon} onPress={() => handleDeleteRoute(index)} />
+                <View style={styles.attemptsContainer}>
+                  {route.attempts.map((attempt: string, attemptIndex: number) => (
+                    <Icon
+                      key={attemptIndex}
+                      name={
+                        attempt === 'fail' ? 'close' :
+                        attempt === 'flash' ? 'flash-outline' :
+                        attempt === 'repeat' ? 'done-all-outline' :
+                        'checkmark'
+                      }
+                      style={styles.attemptIcon}
+                      fill={attemptColors[attempt]}
+                    />
+                  ))}
+                  {[0.2, 0.1, 0.05].map((opacity, index) => (
+                    <Icon
+                      key={`dot-${index}`}
+                      name='radio-button-off-outline'
+                      style={[styles.attemptIcon, { opacity }]}
+                      fill='#FFFFD0'
+                    />
+                  ))}
                 </View>
-              </View>
-              <Text category='label' style={styles.attemptsLabel}>Attempts</Text>
-              <View style={styles.attemptsContainer}>
-                {route.attempts.map((attempt, attemptIndex) => (
-                  <Icon
-                    key={attemptIndex}
-                    name={
-                      attempt === 'fail' ? 'close' :
-                      attempt === 'flash' ? 'flash-outline' :
-                      attempt === 'repeat' ? 'done-all-outline' :
-                      'checkmark'
-                    }
-                    style={styles.attemptIcon}
-                    fill={attemptColors[attempt]}
-                  />
-                ))}
-                {[0.2, 0.1, 0.05].map((opacity, index) => (
-                  <Icon
-                    key={`dot-${index}`}
-                    name='radio-button-off-outline'
-                    style={[styles.attemptIcon, { opacity }]}
-                    fill='#FFFFD0'
-                  />
-                ))}
-              </View>
-              <RouteCardFooter 
-                addAttempt={(attempt: string) => addAttempt(index, attempt)} 
-                undoAttempt={() => undoAttempt(index)} 
-                status={getStatus(route.attempts)} 
-                attempts={route.attempts} 
-              />
-            </Card>
+                <RouteCardFooter 
+                  addAttempt={(attempt: string) => addAttempt(index, attempt)} 
+                  undoAttempt={() => undoAttempt(index)} 
+                  status={getStatus(route.attempts)} 
+                  attempts={route.attempts} 
+                />
+              </Card>
+            </React.Fragment>
           ))
         )}
       </ScrollView>

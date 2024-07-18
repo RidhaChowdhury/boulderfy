@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, ScrollView } from 'react-native';
-import { Button, Input, Select, SelectItem, IndexPath, Text, Toggle } from '@ui-kitten/components';
+import { Button, ButtonGroup, Input, Select, SelectItem, IndexPath, Text } from '@ui-kitten/components';
 import BottomSheet from '@gorhom/bottom-sheet';
-import { boulderGrades, topRopeGrades, holdColors } from '../constants';
+import { boulderGrades, topRopeGrades, holdColors, routeTags, tagColors, gradeColors } from '../constants';
 import CustomHandle from './CustomHandle';
 import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator';
 
 type AddRouteModalProps = {
   visible: boolean,
   onClose: () => void,
-  onAddRoute: (name: string, grade: string, color: string) => void,
-  route?: { name: string, grade: string, color: string },
+  onAddRoute: (name: string, grade: string, color: string, tags: string[]) => void,
+  route?: { name: string, grade: string, color: string, tags: string[] },
   isTopRope: boolean,
   setIsTopRope: React.Dispatch<React.SetStateAction<boolean>>,
 };
@@ -26,7 +26,8 @@ export const AddRouteModal = ({
   const bottomSheetRef = useRef<BottomSheet>(null);
   const [routeName, setRouteName] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(new IndexPath(0));
-  const [selectedColor, setSelectedColor] = useState('#FFFFFF'); // Default color
+  const [selectedColor, setSelectedColor] = useState('#FFFFFF');
+  const [selectedTags, setSelectedTags] = useState<IndexPath[]>([]);
 
   useEffect(() => {
     if (route) {
@@ -35,10 +36,12 @@ export const AddRouteModal = ({
       const gradeIndex = gradeList.findIndex(g => g === route.grade);
       setSelectedIndex(new IndexPath(gradeIndex));
       setSelectedColor(route.color || '#FFFFFF');
+      setSelectedTags(route.tags.map(tag => new IndexPath(routeTags.indexOf(tag))));
     } else {
       setRouteName('');
       setSelectedIndex(new IndexPath(0));
       setSelectedColor('#FFFFFF');
+      setSelectedTags([]);
     }
   }, [route, isTopRope]);
 
@@ -69,10 +72,12 @@ export const AddRouteModal = ({
     const gradeList = isTopRope ? topRopeGrades : boulderGrades;
     const grade = gradeList[selectedIndex.row];
     const name = routeName.trim() !== '' ? routeName : generateRandomName();
-    onAddRoute(name, grade, selectedColor);
+    const tags = selectedTags.map(indexPath => routeTags[indexPath.row]);
+    onAddRoute(name, grade, selectedColor, tags);
     setRouteName('');
     setSelectedIndex(new IndexPath(0));
     setSelectedColor('#FFFFFF');
+    setSelectedTags([]);
     onClose();
   };
 
@@ -82,7 +87,7 @@ export const AddRouteModal = ({
     <BottomSheet
       ref={bottomSheetRef}
       index={-1}
-      snapPoints={['25%', '50%']}
+      snapPoints={['25%', '75%']}
       enablePanDownToClose={true}
       handleComponent={CustomHandle}
       backgroundStyle={{ backgroundColor: '#2b3554' }}
@@ -91,6 +96,23 @@ export const AddRouteModal = ({
         <Text category='h6'>{route ? 'Edit Route' : 'Add Route'}</Text>
         <View style={styles.fieldsContainer}>
           <View style={styles.inputContainer}>
+            <View style={styles.toggleContainer}>
+              <Text category='label' style={styles.colorLabel}>Route Style</Text>
+              <ButtonGroup style={styles.buttonGroup} size='small'>
+                <Button
+                  style={[styles.button, isTopRope ? styles.buttonSelected : styles.buttonUnselected]}
+                  onPress={() => setIsTopRope(true)}
+                >
+                  Top Rope
+                </Button>
+                <Button
+                  style={[styles.button, !isTopRope ? styles.buttonSelected : styles.buttonUnselected]}
+                  onPress={() => setIsTopRope(false)}
+                >
+                  Boulder
+                </Button>
+              </ButtonGroup>
+            </View>
             <Input
               label="Route Name"
               placeholder="Enter route name"
@@ -98,6 +120,8 @@ export const AddRouteModal = ({
               onChangeText={setRouteName}
               style={styles.routeNameInput}
             />
+          </View>
+          <View style={styles.gradeAndTagsContainer}>
             <Select
               label="Grade"
               placeholder="Select grade"
@@ -107,32 +131,45 @@ export const AddRouteModal = ({
               style={styles.gradeSelect}
             >
               {gradeList.map((grade, index) => (
-                <SelectItem key={index} title={grade} />
+                <SelectItem
+                  key={index}
+                  title={grade}
+                  style={[styles.selectItem, { backgroundColor: gradeColors[grade] }]}
+                />
+              ))}
+            </Select>
+            <Select
+              multiSelect
+              value={selectedTags.map(indexPath => routeTags[indexPath.row]).join(', ')}
+              selectedIndex={selectedTags}
+              onSelect={index => setSelectedTags(index as IndexPath[])}
+              style={styles.multiSelect}
+              label={'Tags'}
+            >
+              {routeTags.map((tag, index) => (
+                <SelectItem
+                  key={index}
+                  title={tag}
+                  style={[styles.selectItem, { backgroundColor: tagColors[tag] }]}
+                />
               ))}
             </Select>
           </View>
-          <View style={styles.toggleContainer}>
-            <Text category='label' style={styles.colorLabel}>Top Rope</Text>
-            <Toggle
-              checked={!isTopRope}
-              onChange={() => setIsTopRope(!isTopRope)}
-              style={styles.toggle}
-            />
-            <Text category='label' style={styles.colorLabel}>Boulder</Text>
+          <View>
+            <Text style={styles.colorLabel}>Color</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.colorPicker}>
+              {holdColors.map((color, index) => (
+                <Button
+                  key={index}
+                  style={[
+                    styles.colorSwatch, 
+                    { backgroundColor: color, borderWidth: selectedColor === color ? 2 : 0, borderColor: 'white' }
+                  ]}
+                  onPress={() => setSelectedColor(color)}
+                />
+              ))}
+            </ScrollView>
           </View>
-          <Text style={styles.colorLabel}>Color</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.colorPicker}>
-            {holdColors.map((color, index) => (
-              <Button
-                key={index}
-                style={[
-                  styles.colorSwatch, 
-                  { backgroundColor: color, borderWidth: selectedColor === color ? 2 : 0, borderColor: 'white' }
-                ]}
-                onPress={() => setSelectedColor(color)}
-              />
-            ))}
-          </ScrollView>
         </View>
         <View style={styles.buttonContainer}>
           <Button onPress={handleAddRoute}>{route ? 'UPDATE' : 'ADD'}</Button>
@@ -143,6 +180,9 @@ export const AddRouteModal = ({
   );
 };
 
+
+const evaBlue = '#3366FF';
+
 const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
@@ -151,42 +191,68 @@ const styles = StyleSheet.create({
   },
   fieldsContainer: {
     marginVertical: 16,
+    gap: 8, // Added gap between fields
   },
   inputContainer: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 16,
+    gap: 16, // Added gap between input and toggle container
   },
   routeNameInput: {
-    flex: 1,
-    marginRight: 16,  // Space between Route Name input and Grade select
+    flex: 2,
+    width: '100%',
   },
   gradeSelect: {
     width: 100,
   },
+  selectItem: {
+    padding: 10,
+    borderRadius: 8,
+    marginVertical: 2,
+  },
   toggleContainer: {
+    width: '100%',
+  },
+  toggleLabel: {
+    marginBottom: 4,
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  buttonGroup: {
+    flexDirection: 'row',
+  },
+  button: {
+    flex: 1,
+  },
+  buttonSelected: {
+    backgroundColor: evaBlue,
+    borderColor: evaBlue,
+  },
+  buttonUnselected: {
+    backgroundColor: '#2b3554',
+    borderColor: '#2b3554',
+  },
+  gradeAndTagsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
-  },
-  toggle: {
-    marginHorizontal: 8,
-    borderColor: '#8F9BB3',
-    borderWidth: 1,
+    flex: 1,
+    gap: 16, // Added gap between grade and tags select
   },
   label: {
     fontSize: 14,
     fontWeight: 'bold',
     color: '#FFFFFF',
-    marginBottom: 4, // Adjust as needed for spacing
+    marginBottom: 4,
   },
   colorLabel: {
-    fontSize: 14,  // Match the font size
-    fontWeight: 'bold',  // Match the font weight
-    color: '#8F9BB3',  // Gray color similar to the Route Name label
-    marginBottom: 8,  // Spacing below the label
-    marginTop: 8,
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#8F9BB3',
+    marginBottom: 8,
+    marginTop: 16,
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -204,5 +270,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  multiSelect: {
+    flex: 2,
   },
 });
