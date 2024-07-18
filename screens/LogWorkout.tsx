@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { View, ScrollView } from 'react-native';
 import { Layout, Text, Input, Button, Datepicker, Card, Icon, IconElement, IconProps, IndexPath } from '@ui-kitten/components';
-import { Route, grades, attemptColors, gradeColors } from './constants';
+import { Route, boulderGrades, topRopeGrades, attemptColors, gradeColors } from './constants';
 import { RouteCardFooter } from './components/RouteCardFooter';
 import { AddRouteModal } from './components/AddRouteModal';
 import { styles } from '../styles';
@@ -34,6 +34,7 @@ const LogWorkoutScreen: React.FC = () => {
   const [selectedIndexes, setSelectedIndexes] = useState<IndexPath[]>([]);
   const [isModalVisible, setModalVisible] = useState(false);
   const [editRouteIndex, setEditRouteIndex] = useState<number | null>(null);
+  const [isTopRope, setIsTopRope] = useState(false); // Add the isTopRope state
 
   const handleAddRoute = (name: string, grade: string, color: string) => {
     const newRoute = { name, grade, color, attempts: [] }; // Ensure color is included here
@@ -62,7 +63,7 @@ const LogWorkoutScreen: React.FC = () => {
     newSelectedIndexes[index] = nextIndex;
     setSelectedIndexes(newSelectedIndexes);
 
-    const grade = grades[nextIndex.row];
+    const grade = isTopRope ? topRopeGrades[nextIndex.row] : boulderGrades[nextIndex.row];
     handleRouteChange(index, 'grade', grade);
   };
 
@@ -211,6 +212,8 @@ const LogWorkoutScreen: React.FC = () => {
         onClose={handleHideModal}
         onAddRoute={handleAddRoute}
         route={editRouteIndex !== null ? routes[editRouteIndex] : undefined}
+        isTopRope={isTopRope}
+        setIsTopRope={setIsTopRope}
       />
     </Layout>
   );
