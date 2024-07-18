@@ -4,6 +4,7 @@ import { Button, Input, Select, SelectItem, IndexPath, Text, Toggle } from '@ui-
 import BottomSheet from '@gorhom/bottom-sheet';
 import { boulderGrades, topRopeGrades, holdColors } from '../constants';
 import CustomHandle from './CustomHandle';
+import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator';
 
 type AddRouteModalProps = {
   visible: boolean,
@@ -42,6 +43,12 @@ export const AddRouteModal = ({
   }, [route, isTopRope]);
 
   useEffect(() => {
+    if (!route) {
+      setSelectedIndex(new IndexPath(0));
+    }
+  }, [isTopRope]);
+
+  useEffect(() => {
     if (visible) {
       bottomSheetRef.current?.expand();
     } else {
@@ -49,10 +56,19 @@ export const AddRouteModal = ({
     }
   }, [visible]);
 
+  const generateRandomName = () => {
+    return uniqueNamesGenerator({
+      dictionaries: [adjectives, animals],
+      separator: ' ',
+      style: 'capital',
+      length: 2,
+    });
+  };
+
   const handleAddRoute = () => {
     const gradeList = isTopRope ? topRopeGrades : boulderGrades;
     const grade = gradeList[selectedIndex.row];
-    const name = routeName.trim() !== '' ? routeName : 'Unnamed Route';
+    const name = routeName.trim() !== '' ? routeName : generateRandomName();
     onAddRoute(name, grade, selectedColor);
     setRouteName('');
     setSelectedIndex(new IndexPath(0));

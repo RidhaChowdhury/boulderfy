@@ -10,7 +10,7 @@ export const topRopeGrades = ['5.6', '5.7', '5.8', '5.9', '5.10', '5.11', '5.12'
 
 export const attemptColors: { [key: string]: string } = {
   fail: '#FF999FAA',
-  flash: '#FFD700',
+  flash: '#E6CF4C',
   repeat: '#99D3B4',
   send: '#99D3B4',
 };
