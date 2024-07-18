@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, ScrollView } from 'react-native';
 import { Button, Input, Select, SelectItem, IndexPath, Text, Layout } from '@ui-kitten/components';
 import BottomSheet from '@gorhom/bottom-sheet';
-import { grades, colorSwatches } from '../constants';  // Assuming colorSwatches is defined in your constants
+import { grades, holdColors } from '../constants';  // Updated variable name
 import CustomHandle from './CustomHandle';
 
 type AddRouteModalProps = {
@@ -11,7 +11,6 @@ type AddRouteModalProps = {
   onAddRoute: (name: string, grade: string, color: string) => void,
   route?: { name: string, grade: string, color: string },
 };
-
 
 export const AddRouteModal = ({
   visible,
@@ -55,10 +54,6 @@ export const AddRouteModal = ({
     onClose();
   };
 
-  const handleColorSelect = (color: string) => {
-    setSelectedColor(color);
-  };
-
   return (
     <BottomSheet
       ref={bottomSheetRef}
@@ -71,37 +66,40 @@ export const AddRouteModal = ({
       <View style={styles.contentContainer}>
         <Text category='h6'>{route ? 'Edit Route' : 'Add Route'}</Text>
         <View style={styles.fieldsContainer}>
-          <Input
-            label="Route Name"
-            placeholder="Enter route name"
-            value={routeName}
-            onChangeText={setRouteName}
-            style={styles.routeNameInput}
-          />
-          <Select
-            label="Grade"
-            placeholder="Select grade"
-            value={grades[selectedIndex.row]}
-            selectedIndex={selectedIndex}
-            onSelect={index => setSelectedIndex(index as IndexPath)}
-            style={styles.gradeSelect}
-          >
-            {grades.map((grade, index) => (
-              <SelectItem key={index} title={grade} />
-            ))}
-          </Select>
-        </View>
-        <View style={styles.colorPicker}>
-          {colorSwatches.map((color, index) => (
-            <Button
-              key={index}
-              style={[
-                styles.colorSwatch, 
-                { backgroundColor: color, borderWidth: selectedColor === color ? 2 : 0, borderColor: 'white' }
-              ]}
-              onPress={() => handleColorSelect(color)}
+          <View style={styles.inputContainer}>
+            <Input
+              label="Route Name"
+              placeholder="Enter route name"
+              value={routeName}
+              onChangeText={setRouteName}
+              style={styles.routeNameInput}
             />
-          ))}
+            <Select
+              label="Grade"
+              placeholder="Select grade"
+              value={grades[selectedIndex.row]}
+              selectedIndex={selectedIndex}
+              onSelect={index => setSelectedIndex(index as IndexPath)}
+              style={styles.gradeSelect}
+            >
+              {grades.map((grade, index) => (
+                <SelectItem key={index} title={grade} />
+              ))}
+            </Select>
+          </View>
+          <Text style={styles.colorLabel}>Hold Color</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.colorPicker}>
+            {holdColors.map((color, index) => (
+              <Button
+                key={index}
+                style={[
+                  styles.colorSwatch, 
+                  { backgroundColor: color, borderWidth: selectedColor === color ? 2 : 0, borderColor: 'white' }
+                ]}
+                onPress={() => setSelectedColor(color)}
+              />
+            ))}
+          </ScrollView>
         </View>
         <View style={styles.buttonContainer}>
           <Button onPress={handleAddRoute}>{route ? 'UPDATE' : 'ADD'}</Button>
@@ -120,15 +118,32 @@ const styles = StyleSheet.create({
   },
   fieldsContainer: {
     marginVertical: 16,
+  },
+  inputContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: 16,
+    alignItems: 'center',
+    marginBottom: 16,
   },
   routeNameInput: {
     flex: 1,
+    marginRight: 16,  // Space between Route Name input and Grade select
   },
   gradeSelect: {
     width: 100,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 4, // Adjust as needed for spacing
+  },
+  colorLabel: {
+    fontSize: 14,  // Match the font size
+    fontWeight: 'bold',  // Match the font weight
+    color: '#8F9BB3',  // Gray color similar to the Route Name label
+    marginBottom: 8,  // Spacing below the label
+    marginTop: 8,
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -137,14 +152,14 @@ const styles = StyleSheet.create({
   },
   colorPicker: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    marginVertical: 8,
+    minHeight: 50,
   },
   colorSwatch: {
     width: 30,
     height: 30,
     borderRadius: 15,
     marginHorizontal: 5,
-    borderWidth: 0, // Remove border to look more like swatches
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
 });

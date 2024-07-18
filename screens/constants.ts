@@ -14,8 +14,19 @@ export type Route = {
     send: '#99D3B4',
   };
 
-  export const colorSwatches = ['#FF5733', '#33FF57', '#3357FF', '#FFFF33', '#FF33FF'];
-
+  export const holdColors = [
+    '#FF5733', // Bright red
+    '#33FF57', // Neon green
+    '#3357FF', // Bright blue
+    '#FFFF33', // Bright yellow
+    '#FF33FF', // Bright pink
+    '#00FFFF', // Cyan
+    '#FFA500', // Orange
+    '#800080', // Purple
+    '#000000', // Black
+    '#FFFFFF'  // White
+  ];
+  
   
   export const gradeColors: { [key: string]: string } = {
     V0: '#FF1493',  // Deep Pink
