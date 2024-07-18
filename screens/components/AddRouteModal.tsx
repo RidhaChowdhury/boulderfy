@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, ScrollView } from 'react-native';
-import { Button, Input, Select, SelectItem, IndexPath, Text, Layout } from '@ui-kitten/components';
+import { Button, Input, Select, SelectItem, IndexPath, Text, Toggle } from '@ui-kitten/components';
 import BottomSheet from '@gorhom/bottom-sheet';
-import { grades, holdColors } from '../constants';  // Updated variable name
+import { boulderGrades, topRopeGrades, holdColors } from '../constants';
 import CustomHandle from './CustomHandle';
 
 type AddRouteModalProps = {
@@ -10,13 +10,17 @@ type AddRouteModalProps = {
   onClose: () => void,
   onAddRoute: (name: string, grade: string, color: string) => void,
   route?: { name: string, grade: string, color: string },
+  isTopRope: boolean,
+  setIsTopRope: React.Dispatch<React.SetStateAction<boolean>>,
 };
 
 export const AddRouteModal = ({
   visible,
   onClose,
   onAddRoute,
-  route
+  route,
+  isTopRope,
+  setIsTopRope,
 }: AddRouteModalProps): React.ReactElement => {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const [routeName, setRouteName] = useState('');
@@ -26,7 +30,8 @@ export const AddRouteModal = ({
   useEffect(() => {
     if (route) {
       setRouteName(route.name);
-      const gradeIndex = grades.findIndex(g => g === route.grade);
+      const gradeList = isTopRope ? topRopeGrades : boulderGrades;
+      const gradeIndex = gradeList.findIndex(g => g === route.grade);
       setSelectedIndex(new IndexPath(gradeIndex));
       setSelectedColor(route.color || '#FFFFFF');
     } else {
@@ -34,7 +39,7 @@ export const AddRouteModal = ({
       setSelectedIndex(new IndexPath(0));
       setSelectedColor('#FFFFFF');
     }
-  }, [route]);
+  }, [route, isTopRope]);
 
   useEffect(() => {
     if (visible) {
@@ -45,7 +50,8 @@ export const AddRouteModal = ({
   }, [visible]);
 
   const handleAddRoute = () => {
-    const grade = grades[selectedIndex.row];
+    const gradeList = isTopRope ? topRopeGrades : boulderGrades;
+    const grade = gradeList[selectedIndex.row];
     const name = routeName.trim() !== '' ? routeName : 'Unnamed Route';
     onAddRoute(name, grade, selectedColor);
     setRouteName('');
@@ -53,6 +59,8 @@ export const AddRouteModal = ({
     setSelectedColor('#FFFFFF');
     onClose();
   };
+
+  const gradeList = isTopRope ? topRopeGrades : boulderGrades;
 
   return (
     <BottomSheet
@@ -77,17 +85,26 @@ export const AddRouteModal = ({
             <Select
               label="Grade"
               placeholder="Select grade"
-              value={grades[selectedIndex.row]}
+              value={gradeList[selectedIndex.row]}
               selectedIndex={selectedIndex}
               onSelect={index => setSelectedIndex(index as IndexPath)}
               style={styles.gradeSelect}
             >
-              {grades.map((grade, index) => (
+              {gradeList.map((grade, index) => (
                 <SelectItem key={index} title={grade} />
               ))}
             </Select>
           </View>
-          <Text style={styles.colorLabel}>Hold Color</Text>
+          <View style={styles.toggleContainer}>
+            <Text category='label' style={styles.colorLabel}>Top Rope</Text>
+            <Toggle
+              checked={!isTopRope}
+              onChange={() => setIsTopRope(!isTopRope)}
+              style={styles.toggle}
+            />
+            <Text category='label' style={styles.colorLabel}>Boulder</Text>
+          </View>
+          <Text style={styles.colorLabel}>Color</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.colorPicker}>
             {holdColors.map((color, index) => (
               <Button
@@ -131,6 +148,16 @@ const styles = StyleSheet.create({
   },
   gradeSelect: {
     width: 100,
+  },
+  toggleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  toggle: {
+    marginHorizontal: 8,
+    borderColor: '#8F9BB3',
+    borderWidth: 1,
   },
   label: {
     fontSize: 14,
