@@ -3,6 +3,7 @@ export type Route = {
   grade: string;
   attempts: string[];
   color: string;
+  tags: string[];
 };
 
 export const boulderGrades = ['V0', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10'];
@@ -16,37 +17,44 @@ export const attemptColors: { [key: string]: string } = {
 };
 
 export const holdColors = [
-  '#FF5733', // Bright red
-  '#33FF57', // Neon green
-  '#3357FF', // Bright blue
-  '#FFFF33', // Bright yellow
-  '#FF33FF', // Bright pink
-  '#00FFFF', // Cyan
-  '#FFA500', // Orange
-  '#800080', // Purple
-  '#000000', // Black
-  '#FFFFFF'  // White
+  '#CC6666', // Less bright red
+  '#66CC66', // Less bright green
+  '#6666CC', // Less bright blue
+  '#CCCC66', // Less bright yellow
+  '#CC66CC', // Less bright pink
+  '#66CCCC', // Less bright cyan
+  '#CC9966', // Less bright orange
+  '#9966CC', // Less bright purple
+  '#666666', // Less bright black (grey)
+  '#CCCCCC'  // Less bright white (light grey)
 ];
 
 export const gradeColors: { [key: string]: string } = {
-  'V0': '#FF1493',  // Deep Pink
-  'V1': '#1E90FF',  // Dodger Blue
-  'V2': '#008000',  // Lime Green
-  'V3': '#32CD32',  // Green
-  'V4': '#FF4500',  // Orange Red
-  'V5': '#8B0000',  // Dark Red
-  'V6': '#FF0000',  // Red
-  'V7': '#A9A9A9',  // Dark Grey
-  'V8': '#FFFFFF',  // White
-  'V9': '#696969',  // Dim Grey
-  'V10': '#000000', // Black
-  '5.6': '#FF1493', // Deep Pink
-  '5.7': '#1E90FF', // Dodger Blue
-  '5.8': '#008000', // Lime Green
-  '5.9': '#32CD32', // Green
-  '5.10': '#FF4500', // Orange Red
-  '5.11': '#8B0000', // Dark Red
-  '5.12': '#FF0000', // Red
-  '5.13': '#A9A9A9', // Dark Grey
-  '5.14': '#000000', // Black
+  'V0': '#CC6699',  // Less bright pink
+  'V1': '#6699CC',  // Less bright blue
+  'V2': '#66CC99',  // Less bright green
+  'V3': '#66CC66',  // Less bright light green
+  'V4': '#CC6666',  // Less bright coral
+  'V5': '#CC6666',  // Less bright dark red
+  'V6': '#CC6666',  // Less bright tomato
+  'V7': '#CCCCCC',  // Less bright light grey
+  'V8': '#F5F5F5',  // Less bright white
+  'V9': '#A9A9A9',  // Less bright dim grey
+  'V10': '#696969', // Less bright dark grey
+  '5.6': '#CC6699', // Less bright pink
+  '5.7': '#6699CC', // Less bright blue
+  '5.8': '#66CC99', // Less bright green
+  '5.9': '#66CC66', // Less bright light green
+  '5.10': '#CC6666', // Less bright coral
+  '5.11': '#CC6666', // Less bright dark red
+  '5.12': '#CC6666', // Less bright tomato
+  '5.13': '#CCCCCC', // Less bright light grey
+  '5.14': '#696969', // Less bright dark grey
+};
+
+export const routeTags = ['crimpy', 'dyno', 'overhang'];
+export const tagColors: { [key: string]: string } = {
+  crimpy: '#CC6666', // Less bright red
+  dyno: '#66CC66',   // Less bright green
+  overhang: '#6666CC', // Less bright blue
 };

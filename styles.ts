@@ -25,9 +25,9 @@ export const styles = StyleSheet.create({
   },
   routeContainer: {
     marginVertical: 8,
-    padding: 16,
+    // padding: 16,
     borderRadius: 8,
-    backgroundColor: '#1A2138', // Adjust as needed
+    borderColor: 'transparent', // Ensure border is transparent
   },
   input: {
     flex: 1,
@@ -102,6 +102,7 @@ export const styles = StyleSheet.create({
   headerButtons: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
+    flex: 1,
   },
   editButton: {
     backgroundColor: 'transparent',
@@ -114,10 +115,36 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    backgroundColor: '#1A2138', // Adjust as needed
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 32,
+    marginTop: 8,
   },
   colorCircle: {
     width: 12,
     height: 12,
     borderRadius: 6,
+  },
+  gradeChipContainer: {
+  },
+  gradeChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 16,
+    color: '#FFFFFF',
+    textAlign: 'center',
+  },
+  tagContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 4,
+  },
+  tagChip: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 16,
+    color: '#FFFFFF',
+    textAlign: 'center',
   },
 });
