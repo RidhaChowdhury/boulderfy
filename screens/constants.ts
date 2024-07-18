@@ -2,6 +2,7 @@ export type Route = {
     name: string;
     grade: string;
     attempts: string[];
+    color: string;
   };
   
   export const grades = ['V0', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10'];
@@ -12,6 +13,20 @@ export type Route = {
     repeat: '#99D3B4',
     send: '#99D3B4',
   };
+
+  export const holdColors = [
+    '#FF5733', // Bright red
+    '#33FF57', // Neon green
+    '#3357FF', // Bright blue
+    '#FFFF33', // Bright yellow
+    '#FF33FF', // Bright pink
+    '#00FFFF', // Cyan
+    '#FFA500', // Orange
+    '#800080', // Purple
+    '#000000', // Black
+    '#FFFFFF'  // White
+  ];
+  
   
   export const gradeColors: { [key: string]: string } = {
     V0: '#FF1493',  // Deep Pink

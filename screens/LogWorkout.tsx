@@ -35,15 +35,14 @@ const LogWorkoutScreen: React.FC = () => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [editRouteIndex, setEditRouteIndex] = useState<number | null>(null);
 
-  const handleAddRoute = (name: string, grade: string) => {
+  const handleAddRoute = (name: string, grade: string, color: string) => {
+    const newRoute = { name, grade, color, attempts: [] }; // Ensure color is included here
     if (editRouteIndex !== null) {
       const updatedRoutes = [...routes];
-      updatedRoutes[editRouteIndex] = { ...updatedRoutes[editRouteIndex], name, grade };
+      updatedRoutes[editRouteIndex] = newRoute;
       setRoutes(updatedRoutes);
-      setEditRouteIndex(null);
     } else {
-      setRoutes([...routes, { name, grade, attempts: [] }]);
-      setSelectedIndexes([...selectedIndexes, new IndexPath(0)]);
+      setRoutes([...routes, newRoute]);
     }
     setModalVisible(false);
   };
@@ -154,7 +153,11 @@ const LogWorkoutScreen: React.FC = () => {
               <View style={styles.headerFields}>
                 <View style={styles.customHeader}>
                   <Text category='h6' style={styles.headerText}>{route.name}</Text>
-                  <Text category='s1' style={[styles.headerText, { color: gradeColors[route.grade] }]}>{route.grade}</Text>
+                  <View style={styles.gradeAndColorContainer}>
+                    {/* Color Circle */}
+                    <View style={[styles.colorCircle, { backgroundColor: route.color || '#FFFFFF' }]} />
+                    <Text category='s1' style={[styles.headerText, { color: gradeColors[route.grade] }]}>{route.grade}</Text>
+                  </View>
                 </View>
                 <View style={styles.headerButtons}>
                   <Button style={styles.editButton} accessoryLeft={EditIcon} onPress={() => handleEditRoute(index)} />
@@ -207,7 +210,7 @@ const LogWorkoutScreen: React.FC = () => {
         visible={isModalVisible}
         onClose={handleHideModal}
         onAddRoute={handleAddRoute}
-        route={editRouteIndex !== null ? routes[editRouteIndex] : undefined} // Pass route to modal if editing
+        route={editRouteIndex !== null ? routes[editRouteIndex] : undefined}
       />
     </Layout>
   );

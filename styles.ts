@@ -110,4 +110,14 @@ export const styles = StyleSheet.create({
     width: 32,
     opacity: 0.7, // Adjust the opacity as needed
   },
+  gradeAndColorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  colorCircle: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
 });
