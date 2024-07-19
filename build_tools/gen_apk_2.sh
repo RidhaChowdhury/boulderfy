@@ -2,9 +2,9 @@
 
 # Set your variables
 KEYSTORE_PATH="keys.jks"
-KEY_ALIAS="my-key-alias"
-KEYSTORE_PASSWORD="Anwar-321"
-KEY_PASSWORD="Anwar-321"
+KEY_ALIAS="[KEY-ALIAS-HERE]"
+KEYSTORE_PASSWORD="[KEYSTORE-PASSWORD-HERE]"
+KEY_PASSWORD="[KEY-PASSWORD-HERE]"
 OUTPUT_PATH="output.apks"
 
 # Run EAS build and capture the output
