@@ -151,6 +151,23 @@ export const styles = StyleSheet.create({
   headerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     gap: 8,
+  },
+  timerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  timerText: {
+    fontSize: 18,
+    color: '#FFFFFF',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)', // Semi-transparent background
+  },
+  restTimer: {
+    backgroundColor: 'rgba(50, 100, 200, 0.8)', // Semi-transparent background
   },
 });

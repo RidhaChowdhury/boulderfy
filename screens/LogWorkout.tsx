@@ -1,22 +1,16 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { View, ScrollView, TouchableOpacity } from 'react-native';
-import { Layout, Text, Input, Button, Datepicker, Card, Icon, IconElement, IconProps, IndexPath, Divider } from '@ui-kitten/components';
-import { Route, boulderGrades, topRopeGrades, attemptColors, gradeColors, tagColors } from './constants';
+import { View, ScrollView, Vibration, Platform } from 'react-native';
+import { Layout, Text, Button, Card, Icon, IconElement, IconProps, IndexPath, Divider } from '@ui-kitten/components';
+import { Audio } from 'expo-av';
+import { Route, boulderGrades, topRopeGrades, attemptColors } from './constants';
 import { RouteCardFooter } from './components/RouteCardFooter';
 import { AddRouteModal } from './components/AddRouteModal';
 import { styles } from '../styles';
 
-const PlusIcon = (props: IconProps): IconElement => (
-  <Icon {...props} name='plus-outline' />
-);
-
-const EditIcon = (props: IconProps): IconElement => (
-  <Icon {...props} name='edit-2-outline' />
-);
-
-const TrashIcon = (props: IconProps): IconElement => (
-  <Icon {...props} name='trash-2-outline' />
-);
+// Icons for buttons
+const PlusIcon = (props: IconProps): IconElement => <Icon {...props} name='plus-outline' />;
+const EditIcon = (props: IconProps): IconElement => <Icon {...props} name='edit-2-outline' />;
+const TrashIcon = (props: IconProps): IconElement => <Icon {...props} name='trash-2-outline' />;
 
 const LogWorkoutScreen: React.FC = () => {
   const [date, setDate] = useState(new Date());
@@ -26,8 +20,55 @@ const LogWorkoutScreen: React.FC = () => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [editRouteIndex, setEditRouteIndex] = useState<number | null>(null);
   const [isTopRope, setIsTopRope] = useState(false);
+  
+  const [sessionTime, setSessionTime] = useState(0);
+  const [restTime, setRestTime] = useState(0);
+  const [isResting, setIsResting] = useState(false);
 
   const scrollViewRefs = useRef<Array<ScrollView | null>>([]);
+  const soundRef = useRef<Audio.Sound | null>(null);
+
+  useEffect(() => {
+    const loadSound = async () => {
+      const { sound } = await Audio.Sound.createAsync(
+        require('../assets/threeTone2.mp3') // Ensure this is the correct path
+      );
+      soundRef.current = sound;
+    };
+
+    loadSound();
+
+    const sessionInterval = setInterval(() => {
+      setSessionTime(prevTime => prevTime + 1);
+    }, 1000);
+
+    let restInterval: NodeJS.Timeout;
+    if (isResting) {
+      restInterval = setInterval(() => {
+        setRestTime(prevTime => {
+          if (prevTime > 0) {
+            return prevTime - 1;
+          } else {
+            setIsResting(false);
+            if (Platform.OS !== 'web') {
+              Vibration.vibrate();
+            }
+            soundRef.current?.playAsync();
+            clearInterval(restInterval);
+            return 0;
+          }
+        });
+      }, 1000);
+    }
+
+    return () => {
+      clearInterval(sessionInterval);
+      if (restInterval) clearInterval(restInterval);
+      if (soundRef.current) {
+        soundRef.current.unloadAsync();
+      }
+    };
+  }, [isResting]);
 
   const handleAddRoute = (name: string, grade: string, color: string, tags: string[]) => {
     const newRoute = { name, grade, color, tags, attempts: [] };
@@ -121,9 +162,29 @@ const LogWorkoutScreen: React.FC = () => {
     }
   };
 
+  const startRestTimer = () => {
+    setRestTime(1); // Set rest time to 30 seconds (or any desired value)
+    setIsResting(true);
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  };
+
   return (
     <Layout style={styles.container}>
-      <Text category='h1'>Log Workout</Text>
+      <View style={styles.headerContainer}>
+        <Text category='h1'>Log Workout</Text>
+        <View style={styles.timerContainer}>
+          {isResting ? (
+            <Text style={[styles.timerText, styles.restTimer]}>{formatTime(restTime)}</Text>
+          ) : (
+            <Text style={styles.timerText}>{formatTime(sessionTime)}</Text>
+          )}
+        </View>
+      </View>
       <ScrollView showsHorizontalScrollIndicator={false} showsVerticalScrollIndicator={false} style={styles.scrollView}>
         {routes.length === 0 ? (
           <Text category='p1' style={styles.noRoutesText}>No routes added yet. Press the plus button to add a new route.</Text>
@@ -187,6 +248,7 @@ const LogWorkoutScreen: React.FC = () => {
                     undoAttempt={() => undoAttempt(index)} 
                     status={getStatus(route.attempts)} 
                     attempts={route.attempts} 
+                    startRestTimer={startRestTimer} // Pass the rest timer function
                   />
                 </View>
               </Card>
