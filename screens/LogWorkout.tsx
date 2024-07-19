@@ -1,7 +1,8 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { View, ScrollView, Vibration, Platform } from 'react-native';
+import { View, ScrollView, Platform } from 'react-native';
 import { Layout, Text, Button, Card, Icon, IconElement, IconProps, IndexPath, Divider } from '@ui-kitten/components';
 import { Audio } from 'expo-av';
+import * as Haptics from 'expo-haptics';
 import { Route, boulderGrades, topRopeGrades, attemptColors } from './constants';
 import { RouteCardFooter } from './components/RouteCardFooter';
 import { AddRouteModal } from './components/AddRouteModal';
@@ -51,7 +52,7 @@ const LogWorkoutScreen: React.FC = () => {
           } else {
             setIsResting(false);
             if (Platform.OS !== 'web') {
-              Vibration.vibrate();
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             }
             soundRef.current?.playAsync();
             clearInterval(restInterval);
