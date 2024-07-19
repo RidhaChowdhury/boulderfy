@@ -87,7 +87,7 @@ export const AddRouteModal = ({
     <BottomSheet
       ref={bottomSheetRef}
       index={-1}
-      snapPoints={['25%', '75%']}
+      snapPoints={['60%']}
       enablePanDownToClose={true}
       handleComponent={CustomHandle}
       backgroundStyle={{ backgroundColor: '#2b3554' }}
