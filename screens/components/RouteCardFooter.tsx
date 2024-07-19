@@ -66,7 +66,7 @@ export const RouteCardFooter = ({ addAttempt, undoAttempt, status, attempts, ...
       style={[props.style, styles.footerContainer]}
     >
       <ButtonGroup style={styles.buttonGroup} size='small'>
-        <Button accessoryLeft={UndoIcon} onPress={undoAttempt} disabled={attempts.length === 0}           style={attempts.length === 0 ? styles.disabledUndoButton : styles.undoButton} />
+        {/* <Button accessoryLeft={UndoIcon} onPress={undoAttempt} disabled={attempts.length === 0}           style={attempts.length === 0 ? styles.disabledUndoButton : styles.undoButton} /> */}
         <Button style={{ backgroundColor: attemptColors.fail }} accessoryLeft={CancelIcon} onPress={() => addAttempt('fail')} />
         {renderStatusButton()}
       </ButtonGroup>

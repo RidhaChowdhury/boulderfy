@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { View, ScrollView, TouchableOpacity } from 'react-native';
 import { Layout, Text, Input, Button, Datepicker, Card, Icon, IconElement, IconProps, IndexPath, Divider } from '@ui-kitten/components';
 import { Route, boulderGrades, topRopeGrades, attemptColors, gradeColors, tagColors } from './constants';
@@ -21,11 +21,13 @@ const TrashIcon = (props: IconProps): IconElement => (
 const LogWorkoutScreen: React.FC = () => {
   const [date, setDate] = useState(new Date());
   const [location, setLocation] = useState('');
-  const [routes, setRoutes] = useState<Route[]>([{'attempts': [], 'name': 'Route 1', 'grade': 'V1', 'color': '#FF0000', 'tags': ['crimpy', 'overhang']}]);
+  const [routes, setRoutes] = useState<Route[]>([{'attempts': ['fail','fail','fail','fail','fail','fail','fail','fail','fail',], 'name': 'Route 1', 'grade': 'V1', 'color': '#FF0000', 'tags': ['crimpy', 'overhang']}]);
   const [selectedIndexes, setSelectedIndexes] = useState<IndexPath[]>([]);
   const [isModalVisible, setModalVisible] = useState(false);
   const [editRouteIndex, setEditRouteIndex] = useState<number | null>(null);
   const [isTopRope, setIsTopRope] = useState(false);
+
+  const scrollViewRefs = useRef<Array<ScrollView | null>>([]);
 
   const handleAddRoute = (name: string, grade: string, color: string, tags: string[]) => {
     const newRoute = { name, grade, color, tags, attempts: [] };
@@ -73,6 +75,11 @@ const LogWorkoutScreen: React.FC = () => {
     }
 
     setRoutes(newRoutes);
+
+    // Scroll to end after state update
+    setTimeout(() => {
+      scrollViewRefs.current[index]?.scrollToEnd({ animated: true });
+    }, 0);
   };
 
   const undoAttempt = (index: number) => {
@@ -83,8 +90,6 @@ const LogWorkoutScreen: React.FC = () => {
       setRoutes(newRoutes);
     }
   };
-
-  const pulseIconRef = useRef<IconElement>(null);
 
   const handleShowModal = () => {
     setModalVisible(true);
@@ -119,12 +124,12 @@ const LogWorkoutScreen: React.FC = () => {
   return (
     <Layout style={styles.container}>
       <Text category='h1'>Log Workout</Text>
-      <ScrollView style={styles.scrollView}>
+      <ScrollView showsHorizontalScrollIndicator={false} showsVerticalScrollIndicator={false} style={styles.scrollView}>
         {routes.length === 0 ? (
           <Text category='p1' style={styles.noRoutesText}>No routes added yet. Press the plus button to add a new route.</Text>
         ) : (
           routes.map((route, index) => (
-            <React.Fragment key={index}>
+            <React.Fragment key={index}> 
               {index > 0 && <Divider style={{backgroundColor: '#323f67'}} />}
               <Card style={styles.routeContainer} disabled={true}>
                 <View style={styles.headerFields}>
@@ -141,35 +146,49 @@ const LogWorkoutScreen: React.FC = () => {
                     <Button style={styles.editButton} accessoryLeft={TrashIcon} onPress={() => handleDeleteRoute(index)} />
                   </View>
                 </View>
-                <View style={styles.attemptsContainer}>
-                  {route.attempts.map((attempt: string, attemptIndex: number) => (
-                    <Icon
-                      key={attemptIndex}
-                      name={
-                        attempt === 'fail' ? 'close' :
-                        attempt === 'flash' ? 'flash-outline' :
-                        attempt === 'repeat' ? 'done-all-outline' :
-                        'checkmark'
-                      }
-                      style={styles.attemptIcon}
-                      fill={attemptColors[attempt]}
-                    />
-                  ))}
-                  {[0.2, 0.1, 0.05].map((opacity, index) => (
-                    <Icon
-                      key={`dot-${index}`}
-                      name='radio-button-off-outline'
-                      style={[styles.attemptIcon, { opacity }]}
-                      fill='#FFFFD0'
-                    />
-                  ))}
+                <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 8, gap:8}}>
+                  <ScrollView
+                    horizontal
+                    style={styles.attemptsContainer}
+                    ref={el => (scrollViewRefs.current[index] = el)}
+                  >
+                    {route.attempts.map((attempt: string, attemptIndex: number) => (
+                      <Icon
+                        key={attemptIndex}
+                        name={
+                          attempt === 'fail' ? 'close' :
+                          attempt === 'flash' ? 'flash-outline' :
+                          attempt === 'repeat' ? 'done-all-outline' :
+                          'checkmark'
+                        }
+                        style={styles.attemptIcon}
+                        fill={attemptColors[attempt]}
+                      />
+                    ))}
+                    {route.attempts.length < 2 && [0.2, 0.1, 0.05].slice(0, 3 - route.attempts.length).map((opacity, index) => (
+                      <Icon
+                        key={`dot-${index}`}
+                        name='radio-button-off-outline'
+                        style={[styles.attemptIcon, { opacity }]}
+                        fill='#FFFFD0'
+                      />
+                    ))}
+                    {route.attempts.length >= 2 && (
+                      <Icon
+                        key={`dot-placeholder`}
+                        name='radio-button-off-outline'
+                        style={[styles.attemptIcon, { opacity: 0.2 }]}
+                        fill='#FFFFD0'
+                      />
+                    )}
+                  </ScrollView>
+                  <RouteCardFooter 
+                    addAttempt={(attempt: string) => addAttempt(index, attempt)} 
+                    undoAttempt={() => undoAttempt(index)} 
+                    status={getStatus(route.attempts)} 
+                    attempts={route.attempts} 
+                  />
                 </View>
-                <RouteCardFooter 
-                  addAttempt={(attempt: string) => addAttempt(index, attempt)} 
-                  undoAttempt={() => undoAttempt(index)} 
-                  status={getStatus(route.attempts)} 
-                  attempts={route.attempts} 
-                />
               </Card>
             </React.Fragment>
           ))

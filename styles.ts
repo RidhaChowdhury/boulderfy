@@ -39,7 +39,7 @@ export const styles = StyleSheet.create({
   },
   attemptsContainer: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexWrap: 'nowrap',
     // marginTop: 8,
   },
   attemptIcon: {
