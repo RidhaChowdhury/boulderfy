@@ -9,7 +9,7 @@ export const styles = StyleSheet.create({
   headerFields: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginVertical: 8,
+    marginBottom: 8,
     gap: 16, // Add gap between elements
   },
   scrollView: {
@@ -25,7 +25,6 @@ export const styles = StyleSheet.create({
   },
   routeContainer: {
     marginVertical: 8,
-    // padding: 16,
     borderRadius: 8,
     borderColor: 'transparent', // Ensure border is transparent
   },
@@ -41,7 +40,7 @@ export const styles = StyleSheet.create({
   attemptsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginTop: 8,
+    // marginTop: 8,
   },
   attemptIcon: {
     width: 24,
@@ -115,16 +114,16 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: '#1A2138', // Adjust as needed
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 32,
     marginTop: 8,
   },
   colorCircle: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: 27.5, // Adjust the width as needed
+    height: 27.5, // Adjust the height as needed
+    padding: 4,
+    borderRadius: 12.5, // Half of the width/height to make it a circle
+    backgroundColor: 'lightblue', // Example background color
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   gradeChipContainer: {
   },
@@ -138,13 +137,20 @@ export const styles = StyleSheet.create({
   tagContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 4,
+    gap: 8,
   },
   tagChip: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
     borderRadius: 16,
     color: '#FFFFFF',
     textAlign: 'center',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
 });

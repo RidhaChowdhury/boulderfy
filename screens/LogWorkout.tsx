@@ -21,7 +21,7 @@ const TrashIcon = (props: IconProps): IconElement => (
 const LogWorkoutScreen: React.FC = () => {
   const [date, setDate] = useState(new Date());
   const [location, setLocation] = useState('');
-  const [routes, setRoutes] = useState<Route[]>([]);
+  const [routes, setRoutes] = useState<Route[]>([{'attempts': [], 'name': 'Route 1', 'grade': 'V1', 'color': '#FF0000', 'tags': ['crimpy', 'overhang']}]);
   const [selectedIndexes, setSelectedIndexes] = useState<IndexPath[]>([]);
   const [isModalVisible, setModalVisible] = useState(false);
   const [editRouteIndex, setEditRouteIndex] = useState<number | null>(null);
@@ -119,21 +119,6 @@ const LogWorkoutScreen: React.FC = () => {
   return (
     <Layout style={styles.container}>
       <Text category='h1'>Log Workout</Text>
-      <View style={styles.headerFields}>
-        <Datepicker
-          style={styles.input}
-          label='Date'
-          date={date}
-          onSelect={nextDate => setDate(nextDate)}
-        />
-        <Input
-          style={styles.input}
-          label='Location'
-          placeholder='Enter location'
-          value={location}
-          onChangeText={nextValue => setLocation(nextValue)}
-        />
-      </View>
       <ScrollView style={styles.scrollView}>
         {routes.length === 0 ? (
           <Text category='p1' style={styles.noRoutesText}>No routes added yet. Press the plus button to add a new route.</Text>
@@ -144,23 +129,11 @@ const LogWorkoutScreen: React.FC = () => {
               <Card style={styles.routeContainer} disabled={true}>
                 <View style={styles.headerFields}>
                   <View style={styles.customHeader}>
-                    <Text category='h5' style={styles.headerText}>{route.name}</Text>
-                    <View style={styles.gradeAndColorContainer}>
-                      <View style={[styles.colorCircle, { backgroundColor: route.color || '#FFFFFF' }]} />
-                      <View style={styles.gradeChipContainer}>
-                        <Text style={[styles.gradeChip, { backgroundColor: gradeColors[route.grade] }]}>{route.grade}</Text>
+                    <View style={styles.headerContainer}>
+                      <View style={[styles.colorCircle, { backgroundColor: route.color || '#FFFFFF' }]} >
+                        <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '800' }}>{route.grade}</Text>
                       </View>
-                      {route.tags.length > 0 && 
-                      <View style={[styles.tagContainer]}>
-                        {route.tags.slice(0, 1).map((tag: string, tagIndex: number) => (
-                          <Text key={tagIndex} style={[styles.tagChip, { backgroundColor: tagColors[tag] }]}>{tag}</Text>
-                        ))}
-                        {route.tags.length > 1 && (
-                          <Text style={[styles.tagChip, {backgroundColor: '#AAAAAA'}]}>
-                            +{route.tags.length - 1}
-                          </Text>
-                        )}
-                      </View>}
+                      <Text category='h3' style={styles.headerText}>{route.name}</Text>
                     </View>
                   </View>
                   <View style={styles.headerButtons}>
