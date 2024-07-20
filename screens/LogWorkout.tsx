@@ -8,6 +8,7 @@ import { RouteCardFooter } from './components/RouteCardFooter';
 import AddRouteSheet from './components/AddRouteSheet';
 import TimerSheet from './components/TimerSheet';
 import { styles } from '../styles';
+import { useSheet } from '../context/SheetContext';
 
 const PlusIcon = (props: IconProps): IconElement => <Icon {...props} name='plus-outline' />;
 const EditIcon = (props: IconProps): IconElement => <Icon {...props} name='edit-2-outline' />;
@@ -26,7 +27,8 @@ const LogWorkoutScreen: React.FC = () => {
   const [sessionTime, setSessionTime] = useState(0);
   const [restTime, setRestTime] = useState(0);
   const [isResting, setIsResting] = useState(false);
-  const [autoRestEnabled, setAutoRestEnabled] = useState(false);
+  const [autoRestEnabled, setAutoRestEnabled] = useState(true);
+  const { activeSheet, setActiveSheet } = useSheet();
 
   const scrollViewRefs = useRef<Array<ScrollView | null>>([]);
   const soundRef = useRef<Audio.Sound | null>(null);
@@ -58,6 +60,7 @@ const LogWorkoutScreen: React.FC = () => {
       setRoutes([...routes, newRoute]);
     }
     setModalVisible(false);
+    setActiveSheet(null);
   };
 
   const handleRouteChange = (index: number, key: keyof Route, value: string | string[]) => {
@@ -71,7 +74,6 @@ const LogWorkoutScreen: React.FC = () => {
   const handleGradeSelect = (index: number, nextIndex: IndexPath) => {
     const newSelectedIndexes = [...selectedIndexes];
     newSelectedIndexes[index] = nextIndex;
-    setSelectedIndexes(newSelectedIndexes);
 
     const grade = isTopRope ? topRopeGrades[nextIndex.row] : boulderGrades[nextIndex.row];
     handleRouteChange(index, 'grade', grade);
@@ -115,12 +117,14 @@ const LogWorkoutScreen: React.FC = () => {
 
   const handleShowModal = () => {
     setModalVisible(true);
+    setActiveSheet('AddRouteSheet');
     setEditRouteIndex(null);
   };
 
   const handleEditRoute = (index: number) => {
     setEditRouteIndex(index);
     setModalVisible(true);
+    setActiveSheet('AddRouteSheet');
   };
 
   const handleDeleteRoute = (index: number) => {
@@ -130,6 +134,7 @@ const LogWorkoutScreen: React.FC = () => {
 
   const handleHideModal = () => {
     setModalVisible(false);
+    setActiveSheet(null);
     setEditRouteIndex(null);
   };
 
@@ -145,12 +150,14 @@ const LogWorkoutScreen: React.FC = () => {
 
   const toggleTimerModal = () => {
     setTimerModalVisible(!isTimerModalVisible);
+    setActiveSheet(isTimerModalVisible ? null : 'TimerSheet');
   };
 
   const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
-    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
 
   return (
@@ -249,7 +256,7 @@ const LogWorkoutScreen: React.FC = () => {
         />
       </View>
       <AddRouteSheet
-        visible={isModalVisible}
+        visible={isModalVisible && activeSheet === 'AddRouteSheet'}
         onClose={handleHideModal}
         onAddRoute={handleAddRoute}
         route={editRouteIndex !== null ? routes[editRouteIndex] : undefined}
@@ -257,7 +264,7 @@ const LogWorkoutScreen: React.FC = () => {
         setIsTopRope={setIsTopRope}
       />
       <TimerSheet
-        visible={isTimerModalVisible}
+        visible={isTimerModalVisible && activeSheet === 'TimerSheet'}
         onClose={() => setTimerModalVisible(false)}
         sessionTime={sessionTime}
         setSessionTime={setSessionTime}

@@ -45,13 +45,12 @@ const BaseSheet: React.FC<BaseSheetProps> = ({
   }, [contentRef, updateSnapPoints]);
 
   useEffect(() => {
-    if (visible) {
+    if (visible && activeSheet === sheetName) {
       bottomSheetRef.current?.expand();
-      setActiveSheet(sheetName);
     } else {
       bottomSheetRef.current?.close();
     }
-  }, [visible, sheetName, setActiveSheet]);
+  }, [visible, sheetName, setActiveSheet, activeSheet]);
 
   const handleSheetChanges = useCallback((index: number) => {
     if (index === -1) {

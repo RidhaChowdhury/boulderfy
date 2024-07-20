@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Icon, IconElement, IconProps } from '@ui-kitten/components';
+import { BottomSheetHandleProps } from '@gorhom/bottom-sheet';
 
 interface CustomHandleProps {
   onClose: () => void;
@@ -11,9 +12,9 @@ const CustomHandle: React.FC<CustomHandleProps> = ({ onClose }) => {
 
   return (
     <View style={styles.handleContainer}>
-      <View style={styles.handle}/>
+      <View style={styles.handle} />
       <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-        <CloseIcon fill='#FFFFFF'/>
+        <CloseIcon fill='#FFFFFF' />
       </TouchableOpacity>
     </View>
   );
