@@ -3,7 +3,7 @@ import { View, Platform, StyleSheet } from 'react-native';
 import { Button, ButtonGroup, Input, Text, CheckBox, Icon, IconProps, IconElement } from '@ui-kitten/components';
 import * as Haptics from 'expo-haptics';
 import { Audio } from 'expo-av';
-import BaseSheet from './BaseSheet'; // Import the BaseSheet component
+import BaseSheet from './BaseSheet';
 
 const FlippedRefreshIcon = (props: IconProps): IconElement => (
   <Icon {...props} name='refresh-outline' style={[props.style, { transform: [{ scaleY: -1 }] }]} />
@@ -39,6 +39,7 @@ const TimerSheet: React.FC<TimerSheetProps> = ({
   const [hapticsEnabled, setHapticsEnabled] = useState(true);
   const soundRef = useRef<Audio.Sound | null>(null);
   const [isPaused, setIsPaused] = useState(false);
+  const contentRef = useRef<View>(null);
 
   const PauseIcon = (props: IconProps): IconElement => <Icon {...props} name='pause-circle-outline' />;
   const PlayIcon = (props: IconProps): IconElement => <Icon {...props} name='play-circle-outline' />;
@@ -150,50 +151,50 @@ const TimerSheet: React.FC<TimerSheetProps> = ({
   };
 
   return (
-    <BaseSheet visible={visible} onClose={onClose} sheetName="TimerSheet">
-      <Text category='h6'>{isResting ? 'Rest Timer' : 'Session Timer'}</Text>
-      <Text style={styles.timerText}>{formatTime(isResting ? restTime : sessionTime)}</Text>
-      <ButtonGroup style={styles.timeControls} appearance='filled' size='medium'>
-        <Button onPress={resetTime} accessoryLeft={FlippedRefreshIcon} style={styles.controlButton} />
-        <Button onPress={() => adjustTime(-15)} style={styles.controlButton}>-15</Button>
-        <Button onPress={handlePausePlay} accessoryLeft={(props) => isPaused ? <PlayIcon {...props} /> : <PauseIcon {...props} />} style={styles.controlButton} />
-        <Button onPress={() => adjustTime(15)} style={styles.controlButton}>+15</Button>
-        <Button onPress={handleStartSkipRest} accessoryLeft={(props) => isResting ? <SkipIcon {...props} /> : <RadioButtonOnIcon {...props} />} style={styles.controlButton} />
-      </ButtonGroup>
-      <Input
-        label="Rest Duration (seconds)"
-        placeholder="Enter rest duration"
-        value={String(restDuration)}
-        onChangeText={value => setRestDuration(Number(value))}
-        keyboardType="numeric"
-        style={styles.input}
-      />
-      <CheckBox
-        checked={autoRestEnabled}
-        onChange={setAutoRestEnabled}
-        style={styles.checkbox}
-      >
-        Enable Auto Rest Timer
-      </CheckBox>
-      <CheckBox
-        checked={soundEnabled}
-        onChange={setSoundEnabled}
-        style={styles.checkbox}
-      >
-        Sound
-      </CheckBox>
-      <CheckBox
-        checked={hapticsEnabled}
-        onChange={setHapticsEnabled}
-        style={styles.checkbox}
-      >
-        Haptics
-      </CheckBox>
+    <BaseSheet visible={visible} onClose={onClose} sheetName="TimerSheet" contentRef={contentRef}>
+      <View ref={contentRef}>
+        <Text category='h6'>{isResting ? 'Rest Timer' : 'Session Timer'}</Text>
+        <Text style={styles.timerText}>{formatTime(isResting ? restTime : sessionTime)}</Text>
+        <ButtonGroup style={styles.timeControls} appearance='filled' size='medium'>
+          <Button onPress={resetTime} accessoryLeft={FlippedRefreshIcon} style={styles.controlButton} />
+          <Button onPress={() => adjustTime(-15)} style={styles.controlButton}>-15</Button>
+          <Button onPress={handlePausePlay} accessoryLeft={(props) => isPaused ? <PlayIcon {...props} /> : <PauseIcon {...props} />} style={styles.controlButton} />
+          <Button onPress={() => adjustTime(15)} style={styles.controlButton}>+15</Button>
+          <Button onPress={handleStartSkipRest} accessoryLeft={(props) => isResting ? <SkipIcon {...props} /> : <RadioButtonOnIcon {...props} />} style={styles.controlButton} />
+        </ButtonGroup>
+        <Input
+          label="Rest Duration (seconds)"
+          placeholder="Enter rest duration"
+          value={String(restDuration)}
+          onChangeText={value => setRestDuration(Number(value))}
+          keyboardType="numeric"
+          style={styles.input}
+        />
+        <CheckBox
+          checked={autoRestEnabled}
+          onChange={setAutoRestEnabled}
+          style={styles.checkbox}
+        >
+          Enable Auto Rest Timer
+        </CheckBox>
+        <CheckBox
+          checked={soundEnabled}
+          onChange={setSoundEnabled}
+          style={styles.checkbox}
+        >
+          Sound
+        </CheckBox>
+        <CheckBox
+          checked={hapticsEnabled}
+          onChange={setHapticsEnabled}
+          style={styles.checkbox}
+        >
+          Haptics
+        </CheckBox>
+      </View>
     </BaseSheet>
   );
 };
-
-export default TimerSheet;
 
 const styles = StyleSheet.create({
   timerText: {
@@ -217,3 +218,5 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
 });
+
+export default TimerSheet;

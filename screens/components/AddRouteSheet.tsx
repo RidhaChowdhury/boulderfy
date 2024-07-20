@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, ScrollView } from 'react-native';
 import { Button, ButtonGroup, Input, Select, SelectItem, IndexPath, Text } from '@ui-kitten/components';
 import { boulderGrades, topRopeGrades, holdColors, routeTags, tagColors, gradeColors } from '../constants';
 import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator';
-import BaseSheet from './BaseSheet';  // Import the BaseSheet component
+import BaseSheet from './BaseSheet';
 
 type AddRouteSheetProps = {
   visible: boolean,
@@ -26,6 +26,7 @@ export const AddRouteSheet = ({
   const [selectedIndex, setSelectedIndex] = useState(new IndexPath(0));
   const [selectedColor, setSelectedColor] = useState('#FFFFFF');
   const [selectedTags, setSelectedTags] = useState<IndexPath[]>([]);
+  const contentRef = useRef<View>(null);
 
   useEffect(() => {
     if (route) {
@@ -74,88 +75,90 @@ export const AddRouteSheet = ({
   const gradeList = isTopRope ? topRopeGrades : boulderGrades;
 
   return (
-    <BaseSheet visible={visible} onClose={onClose} sheetName="AddRouteSheet">
-      <Text category='h6'>{route ? 'Edit Route' : 'Add Route'}</Text>
-      <View style={styles.fieldsContainer}>
-        <View style={styles.inputContainer}>
-          <View style={styles.toggleContainer}>
-            <Text category='label' style={styles.colorLabel}>Route Style</Text>
-            <ButtonGroup style={styles.buttonGroup} size='small'>
-              <Button
-                style={[styles.button, isTopRope ? styles.buttonSelected : styles.buttonUnselected]}
-                onPress={() => setIsTopRope(true)}
-              >
-                Top Rope
-              </Button>
-              <Button
-                style={[styles.button, !isTopRope ? styles.buttonSelected : styles.buttonUnselected]}
-                onPress={() => setIsTopRope(false)}
-              >
-                Boulder
-              </Button>
-            </ButtonGroup>
+    <BaseSheet visible={visible} onClose={onClose} sheetName="AddRouteSheet" contentRef={contentRef}>
+      <View ref={contentRef}>
+        <Text category='h6'>{route ? 'Edit Route' : 'Add Route'}</Text>
+        <View style={styles.fieldsContainer}>
+          <View style={styles.inputContainer}>
+            <View style={styles.toggleContainer}>
+              <Text category='label' style={styles.colorLabel}>Route Style</Text>
+              <ButtonGroup style={styles.buttonGroup} size='small'>
+                <Button
+                  style={[styles.button, isTopRope ? styles.buttonSelected : styles.buttonUnselected]}
+                  onPress={() => setIsTopRope(true)}
+                >
+                  Top Rope
+                </Button>
+                <Button
+                  style={[styles.button, !isTopRope ? styles.buttonSelected : styles.buttonUnselected]}
+                  onPress={() => setIsTopRope(false)}
+                >
+                  Boulder
+                </Button>
+              </ButtonGroup>
+            </View>
+            <Input
+              label="Route Name"
+              placeholder="Enter route name"
+              value={routeName}
+              onChangeText={setRouteName}
+              style={styles.routeNameInput}
+            />
           </View>
-          <Input
-            label="Route Name"
-            placeholder="Enter route name"
-            value={routeName}
-            onChangeText={setRouteName}
-            style={styles.routeNameInput}
-          />
+          <View style={styles.gradeAndTagsContainer}>
+            <Select
+              label="Grade"
+              placeholder="Select grade"
+              value={gradeList[selectedIndex.row]}
+              selectedIndex={selectedIndex}
+              onSelect={index => setSelectedIndex(index as IndexPath)}
+              style={styles.gradeSelect}
+            >
+              {gradeList.map((grade, index) => (
+                <SelectItem
+                  key={index}
+                  title={grade}
+                  style={[styles.selectItem, { backgroundColor: gradeColors[grade] }]}
+                />
+              ))}
+            </Select>
+            <Select
+              multiSelect
+              value={selectedTags.map(indexPath => routeTags[indexPath.row]).join(', ')}
+              selectedIndex={selectedTags}
+              onSelect={index => setSelectedTags(index as IndexPath[])}
+              style={styles.multiSelect}
+              label={'Tags'}
+            >
+              {routeTags.map((tag, index) => (
+                <SelectItem
+                  key={index}
+                  title={tag}
+                  style={[styles.selectItem, { backgroundColor: tagColors[tag] }]}
+                />
+              ))}
+            </Select>
+          </View>
+          <View>
+            <Text style={styles.colorLabel}>Color</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.colorPicker}>
+              {holdColors.map((color, index) => (
+                <Button
+                  key={index}
+                  style={[
+                    styles.colorSwatch, 
+                    { backgroundColor: color, borderWidth: selectedColor === color ? 2 : 0, borderColor: 'white' }
+                  ]}
+                  onPress={() => setSelectedColor(color)}
+                />
+              ))}
+            </ScrollView>
+          </View>
         </View>
-        <View style={styles.gradeAndTagsContainer}>
-          <Select
-            label="Grade"
-            placeholder="Select grade"
-            value={gradeList[selectedIndex.row]}
-            selectedIndex={selectedIndex}
-            onSelect={index => setSelectedIndex(index as IndexPath)}
-            style={styles.gradeSelect}
-          >
-            {gradeList.map((grade, index) => (
-              <SelectItem
-                key={index}
-                title={grade}
-                style={[styles.selectItem, { backgroundColor: gradeColors[grade] }]}
-              />
-            ))}
-          </Select>
-          <Select
-            multiSelect
-            value={selectedTags.map(indexPath => routeTags[indexPath.row]).join(', ')}
-            selectedIndex={selectedTags}
-            onSelect={index => setSelectedTags(index as IndexPath[])}
-            style={styles.multiSelect}
-            label={'Tags'}
-          >
-            {routeTags.map((tag, index) => (
-              <SelectItem
-                key={index}
-                title={tag}
-                style={[styles.selectItem, { backgroundColor: tagColors[tag] }]}
-              />
-            ))}
-          </Select>
+        <View style={styles.buttonContainer}>
+          <Button onPress={handleAddRoute}>{route ? 'UPDATE' : 'ADD'}</Button>
+          <Button onPress={onClose} appearance="ghost">CANCEL</Button>
         </View>
-        <View>
-          <Text style={styles.colorLabel}>Color</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.colorPicker}>
-            {holdColors.map((color, index) => (
-              <Button
-                key={index}
-                style={[
-                  styles.colorSwatch, 
-                  { backgroundColor: color, borderWidth: selectedColor === color ? 2 : 0, borderColor: 'white' }
-                ]}
-                onPress={() => setSelectedColor(color)}
-              />
-            ))}
-          </ScrollView>
-        </View>
-      </View>
-      <View style={styles.buttonContainer}>
-        <Button onPress={handleAddRoute}>{route ? 'UPDATE' : 'ADD'}</Button>
-        <Button onPress={onClose} appearance="ghost">CANCEL</Button>
       </View>
     </BaseSheet>
   );
