@@ -183,7 +183,7 @@ const TimerSheet: React.FC<TimerSheetProps> = ({
   return (
     <BaseSheet visible={visible} onClose={onClose} sheetName="TimerSheet" contentRef={contentRef}>
       <View ref={contentRef}>
-        <Text category='h6'>{isResting ? 'Rest Timer' : 'Session Timer'}</Text>
+        <Text category='h4' style={{marginTop: 0}}>{isResting ? 'Rest Timer' : 'Session Timer'}</Text>
         <Text style={styles.timerText}>{formatTime(isResting ? restTime : sessionTime)}</Text>
         <View ref={timeControlsRef}>
           <ButtonGroup style={styles.timeControls} appearance='filled' size='medium'>

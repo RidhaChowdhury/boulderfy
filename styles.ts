@@ -4,6 +4,7 @@ export const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+    paddingBottom: 8,
     backgroundColor: '#222B45', // Dark background color
   },
   overlay: {

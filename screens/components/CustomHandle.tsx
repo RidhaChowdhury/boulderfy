@@ -35,13 +35,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.3)', // Change this to match your dark theme
   },
   closeButton: {
-    width: 20,
-    height: 20,
+    width: 15,
+    height: 15,
     borderRadius: 10,
     backgroundColor: 'rgba(255, 255, 255, 0.3)', // Change this to match your dark theme
     position: 'absolute',
     right: 5,
-    marginTop: 5,
+    // marginTop: 5,
   },
 });
 

@@ -77,7 +77,7 @@ export const AddRouteSheet = ({
   return (
     <BaseSheet visible={visible} onClose={onClose} sheetName="AddRouteSheet" contentRef={contentRef}>
       <View ref={contentRef}>
-        <Text category='h6'>{route ? 'Edit Route' : 'Add Route'}</Text>
+        <Text category='h4'>{route ? 'Edit Route' : 'Add Route'}</Text>
         <View style={styles.fieldsContainer}>
           <View style={styles.inputContainer}>
             <View style={styles.toggleContainer}>

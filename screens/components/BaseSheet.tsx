@@ -26,7 +26,7 @@ const BaseSheet: React.FC<BaseSheetProps> = ({
 
   const updateSnapPoints = useCallback((height: number) => {
     const screenHeight = Dimensions.get('window').height;
-    const minHeightPercentage = (Math.max(height + 50, screenHeight * 0.3) / screenHeight) * 100;
+    const minHeightPercentage = (Math.max(height - 60, screenHeight * 0.3) / screenHeight) * 100;
     const newSnapPoints = [`${minHeightPercentage}%`];
     setSnapPoints(newSnapPoints);
   }, []);
@@ -88,8 +88,9 @@ const BaseSheet: React.FC<BaseSheetProps> = ({
 const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
-    padding: 16,
+    paddingHorizontal: 16,
     backgroundColor: '#2b3554',
+    margin: 0,
   } as ViewStyle,
 });
 

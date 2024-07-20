@@ -186,7 +186,7 @@ const LogWorkoutScreen: React.FC = () => {
                 <View style={styles.headerFields}>
                   <View style={styles.customHeader}>
                     <View style={styles.headerContainer}>
-                      <View style={[styles.colorCircle, { backgroundColor: route.color || '#FFFFFF' }]}>
+                      <View style={[styles.colorCircle, { backgroundColor: route.color + 'AA' || '#FFFFFF'}]}>
                         <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '800' }}>{route.grade}</Text>
                       </View>
                       <Text category='h3' style={styles.headerText}>{route.name}</Text>
