@@ -5,7 +5,6 @@ import * as Haptics from 'expo-haptics';
 import { Audio } from 'expo-av';
 import BaseSheet from './BaseSheet';
 
-
 interface TimerSheetProps {
   visible: boolean;
   onClose: () => void;
@@ -74,52 +73,57 @@ const TimerSheet: React.FC<TimerSheetProps> = ({
   }, [autoRestEnabled, isResting, restDuration]);
 
   useEffect(() => {
-    if (!isPaused) {
-      startTimer();
-    }
-
+    startSessionTimer();
     return () => {
-      if (timerInterval.current) {
-        clearInterval(timerInterval.current);
-      }
+      clearInterval(sessionInterval.current as NodeJS.Timeout);
+      clearInterval(restInterval.current as NodeJS.Timeout);
     };
-  }, [isResting, isPaused]);
+  }, [isPaused]);
 
-  const timerInterval = useRef<NodeJS.Timeout | null>(null);
+  const sessionInterval = useRef<NodeJS.Timeout | null>(null);
+  const restInterval = useRef<NodeJS.Timeout | null>(null);
 
-  const startTimer = () => {
-    if (timerInterval.current) {
-      clearInterval(timerInterval.current);
+  const startSessionTimer = () => {
+    if (sessionInterval.current) {
+      clearInterval(sessionInterval.current);
     }
-    timerInterval.current = setInterval(() => {
+    sessionInterval.current = setInterval(() => {
       setSessionTime(prevTime => prevTime + 1);
-      if (isResting) {
-        setRestTime(prevTime => {
-          if (prevTime > 0) {
-            return prevTime - 1;
-          } else {
-            setIsResting(false);
-            if (Platform.OS !== 'web' && hapticsEnabled) {
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            }
-            if (soundEnabled) {
-              soundRef.current?.playAsync();
-            }
-            clearInterval(timerInterval.current as NodeJS.Timeout);
-            return restDuration;
+    }, 1000);
+  };
+
+  const startRestTimer = () => {
+    if (restInterval.current) {
+      clearInterval(restInterval.current);
+    }
+    restInterval.current = setInterval(() => {
+      setRestTime(prevTime => {
+        if (prevTime > 0) {
+          return prevTime - 1;
+        } else {
+          setIsResting(false);
+          if (Platform.OS !== 'web' && hapticsEnabled) {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           }
-        });
-      }
+          if (soundEnabled) {
+            soundRef.current?.playAsync();
+          }
+          clearInterval(restInterval.current as NodeJS.Timeout);
+          return restDuration;
+        }
+      });
     }, 1000);
   };
 
   const handlePausePlay = () => {
     if (isPaused) {
-      startTimer();
-    } else {
-      if (timerInterval.current) {
-        clearInterval(timerInterval.current);
+      startSessionTimer();
+      if (isResting) {
+        startRestTimer();
       }
+    } else {
+      clearInterval(sessionInterval.current as NodeJS.Timeout);
+      clearInterval(restInterval.current as NodeJS.Timeout);
     }
     setIsPaused(!isPaused);
   };
@@ -127,6 +131,9 @@ const TimerSheet: React.FC<TimerSheetProps> = ({
   const handleStartSkipRest = () => {
     if (!isResting) {
       setRestTime(restDuration);
+      startRestTimer();
+    } else {
+      clearInterval(restInterval.current as NodeJS.Timeout);
     }
     setIsResting(!isResting);
     setIsPaused(false);
@@ -153,7 +160,6 @@ const TimerSheet: React.FC<TimerSheetProps> = ({
     const secs = seconds % 60;
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
-
 
   useEffect(() => {
     if (timeControlsRef.current && settingsRef.current) {
