@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, StyleSheet, ScrollView, Platform } from 'react-native';
-import { Button, ButtonGroup, Input, Text, CheckBox, Icon, IconProps, IconElement } from '@ui-kitten/components';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, StyleSheet, Platform } from 'react-native';
+import { Button, ButtonGroup, Text, CheckBox, Icon, IconProps, IconElement } from '@ui-kitten/components';
 import * as Haptics from 'expo-haptics';
 import { Audio } from 'expo-av';
+import { LinearGradient } from 'expo-linear-gradient';
 import BaseSheet from './BaseSheet';
+import { TimerPicker } from 'react-native-timer-picker';
 
 interface TimerSheetProps {
   visible: boolean;
@@ -161,6 +163,12 @@ const TimerSheet: React.FC<TimerSheetProps> = ({
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
 
+  const handleDurationChange = ({ hours, minutes, seconds }: { hours: number, minutes: number, seconds: number }) => {
+    const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+    setRestDuration(totalSeconds);
+    setRestTime(totalSeconds);
+  };
+
   useEffect(() => {
     if (timeControlsRef.current && settingsRef.current) {
       timeControlsRef.current.measure((x, y, width, height) => {
@@ -186,15 +194,50 @@ const TimerSheet: React.FC<TimerSheetProps> = ({
             <Button onPress={handleStartSkipRest} accessoryLeft={(props) => isResting ? <SkipIcon {...props} /> : <StartRestIcon {...props} />} style={styles.controlButton} />
           </ButtonGroup>
         </View>
-        <View ref={settingsRef}>
-          <Input
-            label="Rest Duration (seconds)"
-            placeholder="Enter rest duration"
-            value={String(restDuration)}
-            onChangeText={value => setRestDuration(Number(value))}
-            keyboardType="numeric"
-            style={styles.input}
+        <View ref={settingsRef} style={styles.pickerContainer}>
+          <Text category='s1' style={styles.label}>Rest Duration</Text>
+          <TimerPicker
+            padWithNItems={1}
+            initialValue={{
+              hours: Math.floor(restDuration / 3600),
+              minutes: Math.floor((restDuration % 3600) / 60),
+              seconds: Math.floor(restDuration % 60)
+            }}
+            hideHours={true}
+            minuteLabel="m:"
+            secondLabel="s"
+            Audio={Audio}
+            LinearGradient={LinearGradient}
+            Haptics={Haptics}
+            onDurationChange={handleDurationChange}
+            styles={{
+              theme: "dark",
+              backgroundColor: "#2b3554", // Use the dark background color from your theme
+              pickerItem: {
+                fontSize: 34,
+                color: '#FFFFFF', // White text color to match your theme
+              },
+              pickerLabel: {
+                fontSize: 32,
+                marginTop: 0,
+                color: '#FFFFFF', // White text color to match your theme
+              },
+              pickerContainer: {
+                marginRight: 6,
+              },
+              pickerItemContainer: {
+                width: 100,
+              },
+              pickerLabelContainer: {
+                right: -20,
+                top: 0,
+                bottom: 6,
+                width: 40,
+                alignItems: "center",
+              },            }}
           />
+        </View>
+        <View>
           <CheckBox
             checked={autoRestEnabled}
             onChange={setAutoRestEnabled}
@@ -230,9 +273,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginVertical: 16,
   },
-  input: {
-    marginVertical: 8,
-  },
   checkbox: {
     marginVertical: 8,
   },
@@ -245,6 +285,13 @@ const styles = StyleSheet.create({
   controlButton: {
     flex: 1,
   },
+  pickerContainer: {
+    marginVertical: 16,
+    alignItems: 'center',
+  },
+  label: {
+    marginBottom: 8,
+  }
 });
 
 export default TimerSheet;
