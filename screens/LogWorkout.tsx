@@ -146,7 +146,14 @@ const LogWorkoutScreen: React.FC = () => {
     setAddRouteSheetVisible(false);
   };
 
-  const formatTime = (seconds: number) => {
+  const formatSessionTime = (seconds: number) => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  };
+
+  const formatRestTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
@@ -164,7 +171,7 @@ const LogWorkoutScreen: React.FC = () => {
             ]}
             onPress={toggleTimerSheet}
           >
-            {isResting ? formatTime(restTime) : formatTime(sessionTime)}
+            {isResting ? formatRestTime(restTime) : formatSessionTime(sessionTime)}
           </Text>
         </View>
       </View>
