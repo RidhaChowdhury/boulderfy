@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Platform, StyleSheet } from 'react-native';
 import { Button, ButtonGroup, Input, Text, CheckBox, Icon, IconProps, IconElement } from '@ui-kitten/components';
-import BottomSheet from '@gorhom/bottom-sheet';
 import * as Haptics from 'expo-haptics';
 import { Audio } from 'expo-av';
-import CustomHandle from './CustomHandle'; // Ensure this path is correct
+import BaseSheet from './BaseSheet'; // Import the BaseSheet component
 
-interface TimerModalProps {
+interface TimerSheetProps {
   visible: boolean;
   onClose: () => void;
   sessionTime: number;
@@ -19,7 +18,7 @@ interface TimerModalProps {
   setAutoRestEnabled: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const TimerModal: React.FC<TimerModalProps> = ({
+const TimerSheet: React.FC<TimerSheetProps> = ({
   visible,
   onClose,
   sessionTime,
@@ -34,22 +33,14 @@ const TimerModal: React.FC<TimerModalProps> = ({
   const [restDuration, setRestDuration] = useState(30);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [hapticsEnabled, setHapticsEnabled] = useState(true);
-  const bottomSheetRef = useRef<BottomSheet>(null);
   const soundRef = useRef<Audio.Sound | null>(null);
   const [isPaused, setIsPaused] = useState(false);
+  const [remainingRestTime, setRemainingRestTime] = useState(restDuration);
 
   const PauseIcon = (props: IconProps): IconElement => <Icon {...props} name='pause-circle-outline' />;
   const PlayIcon = (props: IconProps): IconElement => <Icon {...props} name='play-circle-outline' />;
   const SkipIcon = (props: IconProps): IconElement => <Icon {...props} name='skip-forward-outline' />;
   const RadioButtonOnIcon = (props: IconProps): IconElement => <Icon {...props} name='radio-button-on-outline' />;
-
-  useEffect(() => {
-    if (visible) {
-      bottomSheetRef.current?.expand();
-    } else {
-      bottomSheetRef.current?.close();
-    }
-  }, [visible]);
 
   useEffect(() => {
     const loadSound = async () => {
@@ -76,11 +67,7 @@ const TimerModal: React.FC<TimerModalProps> = ({
 
   useEffect(() => {
     if (!isPaused) {
-      if (isResting) {
-        startRestTimer();
-      } else {
-        startSessionTimer();
-      }
+      startTimer();
     }
 
     return () => {
@@ -92,49 +79,40 @@ const TimerModal: React.FC<TimerModalProps> = ({
 
   const timerInterval = useRef<NodeJS.Timeout | null>(null);
 
-  const startSessionTimer = () => {
+  const startTimer = () => {
     if (timerInterval.current) {
       clearInterval(timerInterval.current);
     }
     timerInterval.current = setInterval(() => {
       setSessionTime(prevTime => prevTime + 1);
-    }, 1000);
-  };
-
-  const startRestTimer = () => {
-    if (timerInterval.current) {
-      clearInterval(timerInterval.current);
-    }
-    setRestTime(restDuration);
-    timerInterval.current = setInterval(() => {
-      setRestTime(prevTime => {
-        if (prevTime > 0) {
-          return prevTime - 1;
-        } else {
-          setIsResting(false);
-          if (Platform.OS !== 'web' && hapticsEnabled) {
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      if (isResting) {
+        setRestTime(prevTime => {
+          if (prevTime > 0) {
+            setRemainingRestTime(prevTime - 1);
+            return prevTime - 1;
+          } else {
+            setIsResting(false);
+            if (Platform.OS !== 'web' && hapticsEnabled) {
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            }
+            if (soundEnabled) {
+              soundRef.current?.playAsync();
+            }
+            clearInterval(timerInterval.current as NodeJS.Timeout);
+            return restDuration;
           }
-          if (soundEnabled) {
-            soundRef.current?.playAsync();
-          }
-          clearInterval(timerInterval.current as NodeJS.Timeout);
-          return 0;
-        }
-      });
+        });
+      }
     }, 1000);
   };
 
   const handlePausePlay = () => {
     if (isPaused) {
-      if (isResting) {
-        startRestTimer();
-      } else {
-        startSessionTimer();
-      }
+      startTimer();
     } else {
       if (timerInterval.current) {
         clearInterval(timerInterval.current);
+        setRemainingRestTime(restTime);
       }
     }
     setIsPaused(!isPaused);
@@ -171,67 +149,52 @@ const TimerModal: React.FC<TimerModalProps> = ({
   };
 
   return (
-    <BottomSheet
-      ref={bottomSheetRef}
-      index={-1}
-      snapPoints={['50%']}
-      enablePanDownToClose={true}
-      handleComponent={CustomHandle}
-      backgroundStyle={{ backgroundColor: '#2b3554' }}
-      onClose={onClose}
-    >
-      <View style={styles.contentContainer}>
-        <Text category='h6'>{isResting ? 'Rest Timer' : 'Session Timer'}</Text>
-        <Text style={styles.timerText}>{formatTime(isResting ? restTime : sessionTime)}</Text>
-        <ButtonGroup style={styles.timeControls} appearance='filled' size='medium'>
-          <Button onPress={resetTime} style={styles.controlButton}>Restart</Button>
-          <Button onPress={() => adjustTime(-15)} style={styles.controlButton}>-15</Button>
-          <Button onPress={handlePausePlay} accessoryLeft={(props) => isPaused ? <PlayIcon {...props} /> : <PauseIcon {...props} />} style={styles.controlButton} />
-          <Button onPress={() => adjustTime(15)} style={styles.controlButton}>+15</Button>
-          <Button onPress={handleStartSkipRest} accessoryLeft={(props) => isResting ? <SkipIcon {...props} /> : <RadioButtonOnIcon {...props} />} style={styles.controlButton} />
-        </ButtonGroup>
-        <Input
-          label="Rest Duration (seconds)"
-          placeholder="Enter rest duration"
-          value={String(restDuration)}
-          onChangeText={value => setRestDuration(Number(value))}
-          keyboardType="numeric"
-          style={styles.input}
-        />
-        <CheckBox
-          checked={autoRestEnabled}
-          onChange={setAutoRestEnabled}
-          style={styles.checkbox}
-        >
-          Enable Auto Rest Timer
-        </CheckBox>
-        <CheckBox
-          checked={soundEnabled}
-          onChange={setSoundEnabled}
-          style={styles.checkbox}
-        >
-          Sound
-        </CheckBox>
-        <CheckBox
-          checked={hapticsEnabled}
-          onChange={setHapticsEnabled}
-          style={styles.checkbox}
-        >
-          Haptics
-        </CheckBox>
-      </View>
-    </BottomSheet>
+    <BaseSheet visible={visible} onClose={onClose} sheetName="TimerSheet">
+      <Text category='h6'>{isResting ? 'Rest Timer' : 'Session Timer'}</Text>
+      <Text style={styles.timerText}>{formatTime(isResting ? restTime : sessionTime)}</Text>
+      <ButtonGroup style={styles.timeControls} appearance='filled' size='medium'>
+        <Button onPress={resetTime} style={styles.controlButton}>Restart</Button>
+        <Button onPress={() => adjustTime(-15)} style={styles.controlButton}>-15</Button>
+        <Button onPress={handlePausePlay} accessoryLeft={(props) => isPaused ? <PlayIcon {...props} /> : <PauseIcon {...props} />} style={styles.controlButton} />
+        <Button onPress={() => adjustTime(15)} style={styles.controlButton}>+15</Button>
+        <Button onPress={handleStartSkipRest} accessoryLeft={(props) => isResting ? <SkipIcon {...props} /> : <RadioButtonOnIcon {...props} />} style={styles.controlButton} />
+      </ButtonGroup>
+      <Input
+        label="Rest Duration (seconds)"
+        placeholder="Enter rest duration"
+        value={String(restDuration)}
+        onChangeText={value => setRestDuration(Number(value))}
+        keyboardType="numeric"
+        style={styles.input}
+      />
+      <CheckBox
+        checked={autoRestEnabled}
+        onChange={setAutoRestEnabled}
+        style={styles.checkbox}
+      >
+        Enable Auto Rest Timer
+      </CheckBox>
+      <CheckBox
+        checked={soundEnabled}
+        onChange={setSoundEnabled}
+        style={styles.checkbox}
+      >
+        Sound
+      </CheckBox>
+      <CheckBox
+        checked={hapticsEnabled}
+        onChange={setHapticsEnabled}
+        style={styles.checkbox}
+      >
+        Haptics
+      </CheckBox>
+    </BaseSheet>
   );
 };
 
-export default TimerModal;
+export default TimerSheet;
 
 const styles = StyleSheet.create({
-  contentContainer: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: '#2b3554',
-  },
   timerText: {
     fontSize: 24,
     color: '#FFFFFF',

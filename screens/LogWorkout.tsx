@@ -1,12 +1,12 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { View, ScrollView, Platform } from 'react-native';
+import { View, ScrollView } from 'react-native';
 import { Layout, Text, Button, Card, Icon, IconElement, IconProps, IndexPath, Divider } from '@ui-kitten/components';
 import { Audio } from 'expo-av';
 import * as Haptics from 'expo-haptics';
 import { Route, boulderGrades, topRopeGrades, attemptColors } from './constants';
 import { RouteCardFooter } from './components/RouteCardFooter';
-import { AddRouteModal } from './components/AddRouteModal';
-import TimerModal from './components/TimerModal';
+import AddRouteSheet from './components/AddRouteSheet';
+import TimerSheet from './components/TimerSheet';
 import { styles } from '../styles';
 
 const PlusIcon = (props: IconProps): IconElement => <Icon {...props} name='plus-outline' />;
@@ -16,7 +16,7 @@ const TrashIcon = (props: IconProps): IconElement => <Icon {...props} name='tras
 const LogWorkoutScreen: React.FC = () => {
   const [date, setDate] = useState(new Date());
   const [location, setLocation] = useState('');
-  const [routes, setRoutes] = useState<Route[]>([{'attempts': ['fail','fail','fail','fail','fail','fail','fail','fail','fail',], 'name': 'Route 1', 'grade': 'V1', 'color': '#FF0000', 'tags': ['crimpy', 'overhang']}]);
+  const [routes, setRoutes] = useState<Route[]>([]);
   const [selectedIndexes, setSelectedIndexes] = useState<IndexPath[]>([]);
   const [isModalVisible, setModalVisible] = useState(false);
   const [editRouteIndex, setEditRouteIndex] = useState<number | null>(null);
@@ -158,7 +158,13 @@ const LogWorkoutScreen: React.FC = () => {
       <View style={styles.headerContainer}>
         <Text category='h1'>Log Workout</Text>
         <View style={styles.timerContainer}>
-          <Text style={styles.timerText} onPress={toggleTimerModal}>
+          <Text
+            style={[
+              styles.timerText,
+              { backgroundColor: isResting ? 'rgba(50, 100, 200, 0.7)' : 'rgba(0, 0, 0, 0.3)' }
+            ]}
+            onPress={toggleTimerModal}
+          >
             {isResting ? formatTime(restTime) : formatTime(sessionTime)}
           </Text>
         </View>
@@ -242,7 +248,7 @@ const LogWorkoutScreen: React.FC = () => {
           onPress={handleShowModal}
         />
       </View>
-      <AddRouteModal
+      <AddRouteSheet
         visible={isModalVisible}
         onClose={handleHideModal}
         onAddRoute={handleAddRoute}
@@ -250,7 +256,7 @@ const LogWorkoutScreen: React.FC = () => {
         isTopRope={isTopRope}
         setIsTopRope={setIsTopRope}
       />
-      <TimerModal
+      <TimerSheet
         visible={isTimerModalVisible}
         onClose={() => setTimerModalVisible(false)}
         sessionTime={sessionTime}

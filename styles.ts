@@ -6,6 +6,17 @@ export const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: '#222B45', // Dark background color
   },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent overlay
+  },
+  headerContainer: {
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
   headerFields: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -40,7 +51,6 @@ export const styles = StyleSheet.create({
   attemptsContainer: {
     flexDirection: 'row',
     flexWrap: 'nowrap',
-    // marginTop: 8,
   },
   attemptIcon: {
     width: 24,
@@ -125,8 +135,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  gradeChipContainer: {
-  },
+  gradeChipContainer: {},
   gradeChip: {
     paddingHorizontal: 12,
     paddingVertical: 4,
@@ -147,12 +156,6 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 12,
     fontWeight: '500',
-  },
-  headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 8,
   },
   timerContainer: {
     flexDirection: 'row',
