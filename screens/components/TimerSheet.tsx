@@ -5,7 +5,7 @@ import * as Haptics from 'expo-haptics';
 import { Audio } from 'expo-av';
 import { LinearGradient } from 'expo-linear-gradient';
 import BaseSheet from './BaseSheet';
-import { TimerPicker } from 'react-native-timer-picker';
+import { TimerPickerModal } from 'react-native-timer-picker';
 
 interface TimerSheetProps {
   visible: boolean;
@@ -38,12 +38,7 @@ const TimerSheet: React.FC<TimerSheetProps> = ({
   const soundRef = useRef<Audio.Sound | null>(null);
   const [isPaused, setIsPaused] = useState(false);
   const contentRef = useRef<View>(null);
-
-  const [timeControlsHeight, setTimeControlsHeight] = useState(0);
-  const [settingsHeight, setSettingsHeight] = useState(0);
-
-  const timeControlsRef = useRef<View>(null);
-  const settingsRef = useRef<View>(null);
+  const [showPicker, setShowPicker] = useState(false);
 
   const PauseIcon = (props: IconProps): IconElement => <Icon {...props} name='pause-circle-outline' />;
   const PlayIcon = (props: IconProps): IconElement => <Icon {...props} name='play-circle-outline' />;
@@ -53,9 +48,7 @@ const TimerSheet: React.FC<TimerSheetProps> = ({
 
   useEffect(() => {
     const loadSound = async () => {
-      const { sound } = await Audio.Sound.createAsync(
-        require('../../assets/threeTone2.mp3')
-      );
+      const { sound } = await Audio.Sound.createAsync(require('../../assets/threeTone2.mp3'));
       soundRef.current = sound;
     };
 
@@ -167,25 +160,15 @@ const TimerSheet: React.FC<TimerSheetProps> = ({
     const totalSeconds = hours * 3600 + minutes * 60 + seconds;
     setRestDuration(totalSeconds);
     setRestTime(totalSeconds);
+    setShowPicker(false); // Close the modal
   };
-
-  useEffect(() => {
-    if (timeControlsRef.current && settingsRef.current) {
-      timeControlsRef.current.measure((x, y, width, height) => {
-        setTimeControlsHeight(height);
-      });
-      settingsRef.current.measure((x, y, width, height) => {
-        setSettingsHeight(height);
-      });
-    }
-  }, [timeControlsRef, settingsRef]);
 
   return (
     <BaseSheet visible={visible} onClose={onClose} sheetName="TimerSheet" contentRef={contentRef}>
       <View ref={contentRef}>
         <Text category='h4' style={{marginTop: 0}}>{isResting ? 'Rest Timer' : 'Session Timer'}</Text>
         <Text style={styles.timerText}>{formatTime(isResting ? restTime : sessionTime)}</Text>
-        <View ref={timeControlsRef}>
+        <View>
           <ButtonGroup style={styles.timeControls} appearance='filled' size='medium'>
             <Button onPress={resetTime} accessoryLeft={RestartIcon} style={styles.controlButton} />
             <Button onPress={() => adjustTime(-15)} style={styles.controlButton}>-15</Button>
@@ -194,47 +177,50 @@ const TimerSheet: React.FC<TimerSheetProps> = ({
             <Button onPress={handleStartSkipRest} accessoryLeft={(props) => isResting ? <SkipIcon {...props} /> : <StartRestIcon {...props} />} style={styles.controlButton} />
           </ButtonGroup>
         </View>
-        <View ref={settingsRef} style={styles.pickerContainer}>
+        <View style={styles.pickerContainer}>
           <Text category='s1' style={styles.label}>Rest Duration</Text>
-          <TimerPicker
-            padWithNItems={1}
-            initialValue={{
-              hours: Math.floor(restDuration / 3600),
-              minutes: Math.floor((restDuration % 3600) / 60),
-              seconds: Math.floor(restDuration % 60)
-            }}
+          <Button onPress={() => setShowPicker(true)}>Edit Rest Time</Button>
+          <TimerPickerModal
+            visible={showPicker}
             hideHours={true}
-            minuteLabel="m:"
-            secondLabel="s"
+            setIsVisible={setShowPicker}
+            onConfirm={handleDurationChange}
+            modalTitle="Set Rest Duration"
+            onCancel={() => setShowPicker(false)}
+            closeOnOverlayPress
             Audio={Audio}
             LinearGradient={LinearGradient}
             Haptics={Haptics}
-            onDurationChange={handleDurationChange}
             styles={{
               theme: "dark",
-              backgroundColor: "#2b3554", // Use the dark background color from your theme
+              backgroundColor: "#222B45", // Eva Dark theme background color
+              contentContainer: {
+                borderRadius: 8,
+                padding: 16,
+                backgroundColor: "#222B45",
+              },
+              button: {
+                paddingVertical: 10,
+                paddingHorizontal: 20,
+                borderRadius: 4,
+                margin: 8,
+              },
+              confirmButton: {
+                color: "#FFFFFF",
+                backgroundColor: "#3366FF",
+              },
+              cancelButton: {
+                color: "#FFFFFF",
+              },
               pickerItem: {
                 fontSize: 34,
-                color: '#FFFFFF', // White text color to match your theme
+                color: '#FFFFFF',
               },
               pickerLabel: {
                 fontSize: 32,
-                marginTop: 0,
-                color: '#FFFFFF', // White text color to match your theme
+                color: '#FFFFFF',
               },
-              pickerContainer: {
-                marginRight: 6,
-              },
-              pickerItemContainer: {
-                width: 100,
-              },
-              pickerLabelContainer: {
-                right: -20,
-                top: 0,
-                bottom: 6,
-                width: 40,
-                alignItems: "center",
-              },            }}
+            }}
           />
         </View>
         <View>

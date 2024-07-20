@@ -26,7 +26,7 @@ const BaseSheet: React.FC<BaseSheetProps> = ({
 
   const updateSnapPoints = useCallback((height: number) => {
     const screenHeight = Dimensions.get('window').height;
-    const minHeightPercentage = (Math.max(height - 60, screenHeight * 0.3) / screenHeight) * 100;
+    const minHeightPercentage = ((Math.max(height, screenHeight * 0.3) / screenHeight) * 100) - 5;
     const newSnapPoints = [`${minHeightPercentage}%`];
     setSnapPoints(newSnapPoints);
   }, []);
