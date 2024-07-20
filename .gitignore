@@ -3,6 +3,9 @@
 #builds folder
 /builds
 
+#utilities folder
+/utilities
+
 # dependencies
 node_modules/
 
