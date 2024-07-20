@@ -5,6 +5,10 @@ import * as Haptics from 'expo-haptics';
 import { Audio } from 'expo-av';
 import BaseSheet from './BaseSheet'; // Import the BaseSheet component
 
+const FlippedRefreshIcon = (props: IconProps): IconElement => (
+  <Icon {...props} name='refresh-outline' style={[props.style, { transform: [{ scaleY: -1 }] }]} />
+);
+
 interface TimerSheetProps {
   visible: boolean;
   onClose: () => void;
@@ -35,7 +39,6 @@ const TimerSheet: React.FC<TimerSheetProps> = ({
   const [hapticsEnabled, setHapticsEnabled] = useState(true);
   const soundRef = useRef<Audio.Sound | null>(null);
   const [isPaused, setIsPaused] = useState(false);
-  const [remainingRestTime, setRemainingRestTime] = useState(restDuration);
 
   const PauseIcon = (props: IconProps): IconElement => <Icon {...props} name='pause-circle-outline' />;
   const PlayIcon = (props: IconProps): IconElement => <Icon {...props} name='play-circle-outline' />;
@@ -88,7 +91,6 @@ const TimerSheet: React.FC<TimerSheetProps> = ({
       if (isResting) {
         setRestTime(prevTime => {
           if (prevTime > 0) {
-            setRemainingRestTime(prevTime - 1);
             return prevTime - 1;
           } else {
             setIsResting(false);
@@ -112,7 +114,6 @@ const TimerSheet: React.FC<TimerSheetProps> = ({
     } else {
       if (timerInterval.current) {
         clearInterval(timerInterval.current);
-        setRemainingRestTime(restTime);
       }
     }
     setIsPaused(!isPaused);
@@ -153,7 +154,7 @@ const TimerSheet: React.FC<TimerSheetProps> = ({
       <Text category='h6'>{isResting ? 'Rest Timer' : 'Session Timer'}</Text>
       <Text style={styles.timerText}>{formatTime(isResting ? restTime : sessionTime)}</Text>
       <ButtonGroup style={styles.timeControls} appearance='filled' size='medium'>
-        <Button onPress={resetTime} style={styles.controlButton}>Restart</Button>
+        <Button onPress={resetTime} accessoryLeft={FlippedRefreshIcon} style={styles.controlButton} />
         <Button onPress={() => adjustTime(-15)} style={styles.controlButton}>-15</Button>
         <Button onPress={handlePausePlay} accessoryLeft={(props) => isPaused ? <PlayIcon {...props} /> : <PauseIcon {...props} />} style={styles.controlButton} />
         <Button onPress={() => adjustTime(15)} style={styles.controlButton}>+15</Button>
