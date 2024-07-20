@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, ScrollView } from 'react-native';
 import { Button, ButtonGroup, Input, Select, SelectItem, IndexPath, Text } from '@ui-kitten/components';
-import BottomSheet from '@gorhom/bottom-sheet';
 import { boulderGrades, topRopeGrades, holdColors, routeTags, tagColors, gradeColors } from '../constants';
-import CustomHandle from './CustomHandle';
 import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator';
+import BaseSheet from './BaseSheet';
 
-type AddRouteModalProps = {
+type AddRouteSheetProps = {
   visible: boolean,
   onClose: () => void,
   onAddRoute: (name: string, grade: string, color: string, tags: string[]) => void,
@@ -15,19 +14,19 @@ type AddRouteModalProps = {
   setIsTopRope: React.Dispatch<React.SetStateAction<boolean>>,
 };
 
-export const AddRouteModal = ({
+export const AddRouteSheet = ({
   visible,
   onClose,
   onAddRoute,
   route,
   isTopRope,
   setIsTopRope,
-}: AddRouteModalProps): React.ReactElement => {
-  const bottomSheetRef = useRef<BottomSheet>(null);
+}: AddRouteSheetProps): React.ReactElement => {
   const [routeName, setRouteName] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(new IndexPath(0));
   const [selectedColor, setSelectedColor] = useState('#FFFFFF');
   const [selectedTags, setSelectedTags] = useState<IndexPath[]>([]);
+  const contentRef = useRef<View>(null);
 
   useEffect(() => {
     if (route) {
@@ -50,14 +49,6 @@ export const AddRouteModal = ({
       setSelectedIndex(new IndexPath(0));
     }
   }, [isTopRope]);
-
-  useEffect(() => {
-    if (visible) {
-      bottomSheetRef.current?.expand();
-    } else {
-      bottomSheetRef.current?.close();
-    }
-  }, [visible]);
 
   const generateRandomName = () => {
     return uniqueNamesGenerator({
@@ -84,16 +75,9 @@ export const AddRouteModal = ({
   const gradeList = isTopRope ? topRopeGrades : boulderGrades;
 
   return (
-    <BottomSheet
-      ref={bottomSheetRef}
-      index={-1}
-      snapPoints={['60%']}
-      enablePanDownToClose={true}
-      handleComponent={CustomHandle}
-      backgroundStyle={{ backgroundColor: '#2b3554' }}
-    >
-      <View style={styles.contentContainer}>
-        <Text category='h6'>{route ? 'Edit Route' : 'Add Route'}</Text>
+    <BaseSheet visible={visible} onClose={onClose} sheetName="AddRouteSheet" contentRef={contentRef}>
+      <View ref={contentRef}>
+        <Text category='h4'>{route ? 'Edit Route' : 'Add Route'}</Text>
         <View style={styles.fieldsContainer}>
           <View style={styles.inputContainer}>
             <View style={styles.toggleContainer}>
@@ -173,32 +157,23 @@ export const AddRouteModal = ({
         </View>
         <View style={styles.buttonContainer}>
           <Button onPress={handleAddRoute}>{route ? 'UPDATE' : 'ADD'}</Button>
-          <Button onPress={onClose} appearance="ghost">CANCEL</Button>
         </View>
       </View>
-    </BottomSheet>
+    </BaseSheet>
   );
 };
 
-
-const evaBlue = '#3366FF';
-
 const styles = StyleSheet.create({
-  contentContainer: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: '#2b3554',
-  },
   fieldsContainer: {
     marginVertical: 16,
-    gap: 8, // Added gap between fields
+    gap: 8,
   },
   inputContainer: {
     flexDirection: 'column',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: 16,
-    gap: 16, // Added gap between input and toggle container
+    gap: 16,
   },
   routeNameInput: {
     flex: 2,
@@ -228,8 +203,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   buttonSelected: {
-    backgroundColor: evaBlue,
-    borderColor: evaBlue,
+    backgroundColor: '#3366FF',
+    borderColor: '#3366FF',
   },
   buttonUnselected: {
     backgroundColor: '#2b3554',
@@ -239,7 +214,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    gap: 16, // Added gap between grade and tags select
+    gap: 16,
   },
   label: {
     fontSize: 14,
@@ -256,7 +231,7 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     marginTop: 16,
   },
   colorPicker: {
@@ -275,3 +250,5 @@ const styles = StyleSheet.create({
     flex: 2,
   },
 });
+
+export default AddRouteSheet;

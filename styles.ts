@@ -4,7 +4,19 @@ export const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+    paddingBottom: 8,
     backgroundColor: '#222B45', // Dark background color
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent overlay
+  },
+  headerContainer: {
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
   },
   headerFields: {
     flexDirection: 'row',
@@ -25,8 +37,8 @@ export const styles = StyleSheet.create({
   },
   routeContainer: {
     marginVertical: 8,
-    borderRadius: 8,
     borderColor: 'transparent', // Ensure border is transparent
+    width: '100%',
   },
   input: {
     flex: 1,
@@ -40,7 +52,6 @@ export const styles = StyleSheet.create({
   attemptsContainer: {
     flexDirection: 'row',
     flexWrap: 'nowrap',
-    // marginTop: 8,
   },
   attemptIcon: {
     width: 24,
@@ -125,8 +136,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  gradeChipContainer: {
-  },
+  gradeChipContainer: {},
   gradeChip: {
     paddingHorizontal: 12,
     paddingVertical: 4,
@@ -148,9 +158,20 @@ export const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
   },
-  headerContainer: {
+  timerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+  },
+  timerText: {
+    fontSize: 18,
+    color: '#FFFFFF',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)', // Semi-transparent background
+  },
+  restTimer: {
+    backgroundColor: 'rgba(50, 100, 200, 0.8)', // Semi-transparent background
   },
 });
