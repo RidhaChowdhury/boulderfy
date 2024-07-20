@@ -25,8 +25,8 @@ export const styles = StyleSheet.create({
   },
   routeContainer: {
     marginVertical: 8,
-    borderRadius: 8,
     borderColor: 'transparent', // Ensure border is transparent
+    width: '100%',
   },
   input: {
     flex: 1,

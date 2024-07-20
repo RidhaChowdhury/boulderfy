@@ -6,9 +6,9 @@ import * as Haptics from 'expo-haptics';
 import { Route, boulderGrades, topRopeGrades, attemptColors } from './constants';
 import { RouteCardFooter } from './components/RouteCardFooter';
 import { AddRouteModal } from './components/AddRouteModal';
+import TimerModal from './components/TimerModal';
 import { styles } from '../styles';
 
-// Icons for buttons
 const PlusIcon = (props: IconProps): IconElement => <Icon {...props} name='plus-outline' />;
 const EditIcon = (props: IconProps): IconElement => <Icon {...props} name='edit-2-outline' />;
 const TrashIcon = (props: IconProps): IconElement => <Icon {...props} name='trash-2-outline' />;
@@ -21,10 +21,12 @@ const LogWorkoutScreen: React.FC = () => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [editRouteIndex, setEditRouteIndex] = useState<number | null>(null);
   const [isTopRope, setIsTopRope] = useState(false);
-  
+
+  const [isTimerModalVisible, setTimerModalVisible] = useState(false);
   const [sessionTime, setSessionTime] = useState(0);
   const [restTime, setRestTime] = useState(0);
   const [isResting, setIsResting] = useState(false);
+  const [autoRestEnabled, setAutoRestEnabled] = useState(false);
 
   const scrollViewRefs = useRef<Array<ScrollView | null>>([]);
   const soundRef = useRef<Audio.Sound | null>(null);
@@ -32,44 +34,19 @@ const LogWorkoutScreen: React.FC = () => {
   useEffect(() => {
     const loadSound = async () => {
       const { sound } = await Audio.Sound.createAsync(
-        require('../assets/threeTone2.mp3') // Ensure this is the correct path
+        require('../assets/threeTone2.mp3')
       );
       soundRef.current = sound;
     };
 
     loadSound();
 
-    const sessionInterval = setInterval(() => {
-      setSessionTime(prevTime => prevTime + 1);
-    }, 1000);
-
-    let restInterval: NodeJS.Timeout;
-    if (isResting) {
-      restInterval = setInterval(() => {
-        setRestTime(prevTime => {
-          if (prevTime > 0) {
-            return prevTime - 1;
-          } else {
-            setIsResting(false);
-            if (Platform.OS !== 'web') {
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            }
-            soundRef.current?.playAsync();
-            clearInterval(restInterval);
-            return 0;
-          }
-        });
-      }, 1000);
-    }
-
     return () => {
-      clearInterval(sessionInterval);
-      if (restInterval) clearInterval(restInterval);
       if (soundRef.current) {
         soundRef.current.unloadAsync();
       }
     };
-  }, [isResting]);
+  }, []);
 
   const handleAddRoute = (name: string, grade: string, color: string, tags: string[]) => {
     const newRoute = { name, grade, color, tags, attempts: [] };
@@ -118,10 +95,13 @@ const LogWorkoutScreen: React.FC = () => {
 
     setRoutes(newRoutes);
 
-    // Scroll to end after state update
     setTimeout(() => {
       scrollViewRefs.current[index]?.scrollToEnd({ animated: true });
     }, 0);
+
+    if (autoRestEnabled) {
+      setIsResting(true);
+    }
   };
 
   const undoAttempt = (index: number) => {
@@ -135,7 +115,7 @@ const LogWorkoutScreen: React.FC = () => {
 
   const handleShowModal = () => {
     setModalVisible(true);
-    setEditRouteIndex(null); // Reset the edit index
+    setEditRouteIndex(null);
   };
 
   const handleEditRoute = (index: number) => {
@@ -163,9 +143,8 @@ const LogWorkoutScreen: React.FC = () => {
     }
   };
 
-  const startRestTimer = () => {
-    setRestTime(1); // Set rest time to 30 seconds (or any desired value)
-    setIsResting(true);
+  const toggleTimerModal = () => {
+    setTimerModalVisible(!isTimerModalVisible);
   };
 
   const formatTime = (seconds: number) => {
@@ -179,11 +158,9 @@ const LogWorkoutScreen: React.FC = () => {
       <View style={styles.headerContainer}>
         <Text category='h1'>Log Workout</Text>
         <View style={styles.timerContainer}>
-          {isResting ? (
-            <Text style={[styles.timerText, styles.restTimer]}>{formatTime(restTime)}</Text>
-          ) : (
-            <Text style={styles.timerText}>{formatTime(sessionTime)}</Text>
-          )}
+          <Text style={styles.timerText} onPress={toggleTimerModal}>
+            {isResting ? formatTime(restTime) : formatTime(sessionTime)}
+          </Text>
         </View>
       </View>
       <ScrollView showsHorizontalScrollIndicator={false} showsVerticalScrollIndicator={false} style={styles.scrollView}>
@@ -249,7 +226,7 @@ const LogWorkoutScreen: React.FC = () => {
                     undoAttempt={() => undoAttempt(index)} 
                     status={getStatus(route.attempts)} 
                     attempts={route.attempts} 
-                    startRestTimer={startRestTimer} // Pass the rest timer function
+                    startRestTimer={() => { if (autoRestEnabled) setIsResting(true); }}
                   />
                 </View>
               </Card>
@@ -272,6 +249,18 @@ const LogWorkoutScreen: React.FC = () => {
         route={editRouteIndex !== null ? routes[editRouteIndex] : undefined}
         isTopRope={isTopRope}
         setIsTopRope={setIsTopRope}
+      />
+      <TimerModal
+        visible={isTimerModalVisible}
+        onClose={() => setTimerModalVisible(false)}
+        sessionTime={sessionTime}
+        setSessionTime={setSessionTime}
+        restTime={restTime}
+        setRestTime={setRestTime}
+        isResting={isResting}
+        setIsResting={setIsResting}
+        autoRestEnabled={autoRestEnabled}
+        setAutoRestEnabled={setAutoRestEnabled}
       />
     </Layout>
   );

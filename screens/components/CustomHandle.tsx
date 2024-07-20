@@ -16,10 +16,10 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   handle: {
-    width: 40,
+    width: '25%',
     height: 5,
     borderRadius: 2.5,
-    backgroundColor: '#888', // Change this to match your dark theme
+    backgroundColor: 'rgba(255, 255, 255, 0.3)', // Change this to match your dark theme
   },
 });
 
