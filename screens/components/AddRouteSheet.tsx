@@ -157,7 +157,6 @@ export const AddRouteSheet = ({
         </View>
         <View style={styles.buttonContainer}>
           <Button onPress={handleAddRoute}>{route ? 'UPDATE' : 'ADD'}</Button>
-          <Button onPress={onClose} appearance="ghost">CANCEL</Button>
         </View>
       </View>
     </BaseSheet>
@@ -232,7 +231,7 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     marginTop: 16,
   },
   colorPicker: {

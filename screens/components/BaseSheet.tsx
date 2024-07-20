@@ -74,7 +74,7 @@ const BaseSheet: React.FC<BaseSheetProps> = ({
       snapPoints={snapPoints}
       onChange={handleSheetChanges}
       enablePanDownToClose={true}
-      handleComponent={CustomHandle}
+      handleComponent={() => <CustomHandle onClose={onClose} />}
       backgroundStyle={{ backgroundColor: '#2b3554' }}
     >
       <View style={styles.contentContainer}>
