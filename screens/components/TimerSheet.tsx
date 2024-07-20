@@ -218,7 +218,8 @@ const TimerSheet: React.FC<TimerSheetProps> = ({
 
 const styles = StyleSheet.create({
   timerText: {
-    fontSize: 24,
+    fontSize: 48,
+    fontWeight: 'bold',
     color: '#FFFFFF',
     textAlign: 'center',
     marginVertical: 16,
@@ -233,10 +234,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     marginVertical: 16,
+    borderRadius: 32,
   },
   controlButton: {
     flex: 1,
-    marginHorizontal: 4,
   },
 });
 

@@ -28,7 +28,6 @@ const BaseSheet: React.FC<BaseSheetProps> = ({
     const screenHeight = Dimensions.get('window').height;
     const minHeightPercentage = (Math.max(height + 50, screenHeight * 0.3) / screenHeight) * 100;
     const newSnapPoints = [`${minHeightPercentage}%`];
-    console.log('Setting new snap points:', newSnapPoints);
     setSnapPoints(newSnapPoints);
   }, []);
 
@@ -36,7 +35,6 @@ const BaseSheet: React.FC<BaseSheetProps> = ({
     if (contentRef.current) {
       setTimeout(() => {
         contentRef.current?.measure((x: number, y: number, width: number, height: number) => {
-          console.log('Measured height:', height);
           if (height > 0) {
             setContentHeight(height);
             updateSnapPoints(height);
@@ -48,17 +46,14 @@ const BaseSheet: React.FC<BaseSheetProps> = ({
 
   useEffect(() => {
     if (visible) {
-      console.log('Expanding sheet');
       bottomSheetRef.current?.expand();
       setActiveSheet(sheetName);
     } else {
-      console.log('Closing sheet');
       bottomSheetRef.current?.close();
     }
   }, [visible, sheetName, setActiveSheet]);
 
   const handleSheetChanges = useCallback((index: number) => {
-    console.log('Sheet index changed:', index);
     if (index === -1) {
       onClose();
       if (activeSheet === sheetName) {
