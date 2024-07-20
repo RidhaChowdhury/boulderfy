@@ -22,10 +22,11 @@ const BaseSheet: React.FC<BaseSheetProps> = ({
   const bottomSheetRef = useRef<BottomSheet>(null);
   const { activeSheet, setActiveSheet } = useSheet();
   const [snapPoints, setSnapPoints] = useState<(string | number)[]>(['50%', '90%']);
+  const [contentHeight, setContentHeight] = useState(0);
 
   const updateSnapPoints = useCallback((height: number) => {
     const screenHeight = Dimensions.get('window').height;
-    const minHeightPercentage = (Math.max(height+50, screenHeight * 0.3) / screenHeight) * 100;
+    const minHeightPercentage = (Math.max(height + 50, screenHeight * 0.3) / screenHeight) * 100;
     const newSnapPoints = [`${minHeightPercentage}%`];
     console.log('Setting new snap points:', newSnapPoints);
     setSnapPoints(newSnapPoints);
@@ -37,6 +38,7 @@ const BaseSheet: React.FC<BaseSheetProps> = ({
         contentRef.current?.measure((x: number, y: number, width: number, height: number) => {
           console.log('Measured height:', height);
           if (height > 0) {
+            setContentHeight(height);
             updateSnapPoints(height);
           }
         });

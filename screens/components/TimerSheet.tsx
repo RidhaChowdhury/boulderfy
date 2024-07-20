@@ -1,13 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Platform, StyleSheet } from 'react-native';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { View, StyleSheet, ScrollView, Platform } from 'react-native';
 import { Button, ButtonGroup, Input, Text, CheckBox, Icon, IconProps, IconElement } from '@ui-kitten/components';
 import * as Haptics from 'expo-haptics';
 import { Audio } from 'expo-av';
 import BaseSheet from './BaseSheet';
 
-const FlippedRefreshIcon = (props: IconProps): IconElement => (
-  <Icon {...props} name='refresh-outline' style={[props.style, { transform: [{ scaleY: -1 }] }]} />
-);
 
 interface TimerSheetProps {
   visible: boolean;
@@ -41,10 +38,17 @@ const TimerSheet: React.FC<TimerSheetProps> = ({
   const [isPaused, setIsPaused] = useState(false);
   const contentRef = useRef<View>(null);
 
+  const [timeControlsHeight, setTimeControlsHeight] = useState(0);
+  const [settingsHeight, setSettingsHeight] = useState(0);
+
+  const timeControlsRef = useRef<View>(null);
+  const settingsRef = useRef<View>(null);
+
   const PauseIcon = (props: IconProps): IconElement => <Icon {...props} name='pause-circle-outline' />;
   const PlayIcon = (props: IconProps): IconElement => <Icon {...props} name='play-circle-outline' />;
   const SkipIcon = (props: IconProps): IconElement => <Icon {...props} name='skip-forward-outline' />;
-  const RadioButtonOnIcon = (props: IconProps): IconElement => <Icon {...props} name='radio-button-on-outline' />;
+  const StartRestIcon = (props: IconProps): IconElement => <Icon {...props} name='radio-button-on-outline' />;
+  const RestartIcon = (props: IconProps): IconElement => <Icon {...props} name='refresh-outline' style={[props.style, { transform: [{ scaleY: -1 }] }]} />;
 
   useEffect(() => {
     const loadSound = async () => {
@@ -150,47 +154,63 @@ const TimerSheet: React.FC<TimerSheetProps> = ({
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
 
+
+  useEffect(() => {
+    if (timeControlsRef.current && settingsRef.current) {
+      timeControlsRef.current.measure((x, y, width, height) => {
+        setTimeControlsHeight(height);
+      });
+      settingsRef.current.measure((x, y, width, height) => {
+        setSettingsHeight(height);
+      });
+    }
+  }, [timeControlsRef, settingsRef]);
+
   return (
     <BaseSheet visible={visible} onClose={onClose} sheetName="TimerSheet" contentRef={contentRef}>
       <View ref={contentRef}>
         <Text category='h6'>{isResting ? 'Rest Timer' : 'Session Timer'}</Text>
         <Text style={styles.timerText}>{formatTime(isResting ? restTime : sessionTime)}</Text>
-        <ButtonGroup style={styles.timeControls} appearance='filled' size='medium'>
-          <Button onPress={resetTime} accessoryLeft={FlippedRefreshIcon} style={styles.controlButton} />
-          <Button onPress={() => adjustTime(-15)} style={styles.controlButton}>-15</Button>
-          <Button onPress={handlePausePlay} accessoryLeft={(props) => isPaused ? <PlayIcon {...props} /> : <PauseIcon {...props} />} style={styles.controlButton} />
-          <Button onPress={() => adjustTime(15)} style={styles.controlButton}>+15</Button>
-          <Button onPress={handleStartSkipRest} accessoryLeft={(props) => isResting ? <SkipIcon {...props} /> : <RadioButtonOnIcon {...props} />} style={styles.controlButton} />
-        </ButtonGroup>
-        <Input
-          label="Rest Duration (seconds)"
-          placeholder="Enter rest duration"
-          value={String(restDuration)}
-          onChangeText={value => setRestDuration(Number(value))}
-          keyboardType="numeric"
-          style={styles.input}
-        />
-        <CheckBox
-          checked={autoRestEnabled}
-          onChange={setAutoRestEnabled}
-          style={styles.checkbox}
-        >
-          Enable Auto Rest Timer
-        </CheckBox>
-        <CheckBox
-          checked={soundEnabled}
-          onChange={setSoundEnabled}
-          style={styles.checkbox}
-        >
-          Sound
-        </CheckBox>
-        <CheckBox
-          checked={hapticsEnabled}
-          onChange={setHapticsEnabled}
-          style={styles.checkbox}
-        >
-          Haptics
-        </CheckBox>
+        <View ref={timeControlsRef}>
+          <ButtonGroup style={styles.timeControls} appearance='filled' size='medium'>
+            <Button onPress={resetTime} accessoryLeft={RestartIcon} style={styles.controlButton} />
+            <Button onPress={() => adjustTime(-15)} style={styles.controlButton}>-15</Button>
+            <Button onPress={handlePausePlay} accessoryLeft={(props) => isPaused ? <PlayIcon {...props} /> : <PauseIcon {...props} />} style={styles.controlButton} />
+            <Button onPress={() => adjustTime(15)} style={styles.controlButton}>+15</Button>
+            <Button onPress={handleStartSkipRest} accessoryLeft={(props) => isResting ? <SkipIcon {...props} /> : <StartRestIcon {...props} />} style={styles.controlButton} />
+          </ButtonGroup>
+        </View>
+        <View ref={settingsRef}>
+          <Input
+            label="Rest Duration (seconds)"
+            placeholder="Enter rest duration"
+            value={String(restDuration)}
+            onChangeText={value => setRestDuration(Number(value))}
+            keyboardType="numeric"
+            style={styles.input}
+          />
+          <CheckBox
+            checked={autoRestEnabled}
+            onChange={setAutoRestEnabled}
+            style={styles.checkbox}
+          >
+            Enable Auto Rest Timer
+          </CheckBox>
+          <CheckBox
+            checked={soundEnabled}
+            onChange={setSoundEnabled}
+            style={styles.checkbox}
+          >
+            Sound
+          </CheckBox>
+          <CheckBox
+            checked={hapticsEnabled}
+            onChange={setHapticsEnabled}
+            style={styles.checkbox}
+          >
+            Haptics
+          </CheckBox>
+        </View>
       </View>
     </BaseSheet>
   );
@@ -206,16 +226,17 @@ const styles = StyleSheet.create({
   input: {
     marginVertical: 8,
   },
+  checkbox: {
+    marginVertical: 8,
+  },
   timeControls: {
     flexDirection: 'row',
+    justifyContent: 'space-around',
     marginVertical: 16,
-    width: '100%',
   },
   controlButton: {
     flex: 1,
-  },
-  checkbox: {
-    marginVertical: 8,
+    marginHorizontal: 4,
   },
 });
 
