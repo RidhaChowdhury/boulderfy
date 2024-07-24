@@ -62,10 +62,10 @@ const TimerSheet: React.FC<TimerSheetProps> = ({
   }, []);
 
   useEffect(() => {
-    if (autoRestEnabled && !isResting) {
-      setRestTime(restDuration);
+    if (autoRestEnabled && isResting) {
+      startRestTimer();
     }
-  }, [autoRestEnabled, isResting, restDuration]);
+  }, [autoRestEnabled, isResting]);
 
   useEffect(() => {
     startSessionTimer();

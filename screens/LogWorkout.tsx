@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, ScrollView } from 'react-native';
+import { View, ScrollView, AppState, AppStateStatus } from 'react-native';
 import { Layout, Text, Button, Card, Icon, IconElement, IconProps, IndexPath, Divider } from '@ui-kitten/components';
 import { Audio } from 'expo-av';
 import * as Haptics from 'expo-haptics';
@@ -8,6 +8,21 @@ import { RouteCardFooter } from './components/RouteCardFooter';
 import AddRouteSheet from './components/AddRouteSheet';
 import TimerSheet from './components/TimerSheet';
 import { styles } from '../styles';
+import * as TaskManager from 'expo-task-manager';
+import * as Notifications from 'expo-notifications';
+
+const TASK_NAME = 'BACKGROUND_TIMER_TASK';
+
+const scheduleBackgroundTask = async (restTime: number) => {
+  await TaskManager.unregisterTaskAsync(TASK_NAME);
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: 'Rest Timer Running',
+      body: 'Rest timer is active in the background.',
+    },
+    trigger: { seconds: 1, repeats: true },
+  });
+};
 
 const PlusIcon = (props: IconProps): IconElement => <Icon {...props} name='plus-outline' />;
 const EditIcon = (props: IconProps): IconElement => <Icon {...props} name='edit-2-outline' />;
@@ -45,6 +60,20 @@ const LogWorkoutScreen: React.FC = () => {
       }
     };
   }, []);
+
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: AppStateStatus) => {
+      if ((nextAppState === 'background' || nextAppState === 'inactive') && isResting) {
+        scheduleBackgroundTask(restTime);
+      }
+    };
+
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+
+    return () => {
+      subscription.remove();
+    };
+  }, [isResting, restTime]);
 
   const handleAddRoute = (name: string, grade: string, color: string, tags: string[]) => {
     const newRoute = { name, grade, color, tags, attempts: [] };
