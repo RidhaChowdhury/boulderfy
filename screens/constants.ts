@@ -22,11 +22,9 @@ export const holdColors = [
   '#6666CC', // Less bright blue
   '#CCCC66', // Less bright yellow
   '#CC66CC', // Less bright pink
-  '#66CCCC', // Less bright cyan
   '#CC9966', // Less bright orange
   '#9966CC', // Less bright purple
   '#666666', // Less bright black (grey)
-  '#CCCCCC'  // Less bright white (light grey)
 ];
 
 export const gradeColors: { [key: string]: string } = {

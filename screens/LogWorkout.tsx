@@ -6,7 +6,7 @@ import { Audio } from 'expo-av';
 import * as Haptics from 'expo-haptics';
 import { Route, boulderGrades, topRopeGrades, attemptColors } from './constants';
 import { RouteCardFooter } from './components/RouteCardFooter';
-import AddRouteSheet from './components/AddRouteSheet';
+import AddRouteModal from './components/AddRouteModal';
 import TimerSheet from './components/TimerSheet';
 import { styles } from '../styles';
 
@@ -17,7 +17,7 @@ const TrashIcon = (props: IconProps): IconElement => <Icon {...props} name='tras
 const LogWorkoutScreen: React.FC = () => {
   const [routes, setRoutes] = useState<Route[]>([]);
   const [selectedIndexes, setSelectedIndexes] = useState<IndexPath[]>([]);
-  const [isAddRouteSheetVisible, setAddRouteSheetVisible] = useState(false);
+  const [isAddRouteModalVisible, setAddRouteModalVisible] = useState(false);
   const [isTimerSheetVisible, setTimerSheetVisible] = useState(false);
   const [editRouteIndex, setEditRouteIndex] = useState<number | null>(null);
   const [isTopRope, setIsTopRope] = useState(false);
@@ -80,7 +80,7 @@ const LogWorkoutScreen: React.FC = () => {
     } else {
       setRoutes([...routes, newRoute]);
     }
-    setAddRouteSheetVisible(false);
+    setAddRouteModalVisible(false);
   };
 
   const handleRouteChange = (index: number, key: keyof Route, value: string | string[]) => {
@@ -137,13 +137,13 @@ const LogWorkoutScreen: React.FC = () => {
   };
 
   const handleShowModal = () => {
-    setAddRouteSheetVisible(true);
+    setAddRouteModalVisible(true);
     setEditRouteIndex(null);
   };
 
   const handleEditRoute = (index: number) => {
     setEditRouteIndex(index);
-    setAddRouteSheetVisible(true);
+    setAddRouteModalVisible(true);
   };
 
   const handleDeleteRoute = (index: number) => {
@@ -152,13 +152,13 @@ const LogWorkoutScreen: React.FC = () => {
   };
 
   const handleHideModal = () => {
-    setAddRouteSheetVisible(false);
+    setAddRouteModalVisible(false);
     setEditRouteIndex(null);
   };
 
   const toggleTimerSheet = () => {
     setTimerSheetVisible(true);
-    setAddRouteSheetVisible(false);
+    setAddRouteModalVisible(false);
   };
 
   const formatSessionTime = (seconds: number) => {
@@ -204,7 +204,9 @@ const LogWorkoutScreen: React.FC = () => {
                       <View style={[styles.colorCircle, { backgroundColor: route.color + 'AA' || '#FFFFFF'}]}>
                         <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '800' }}>{route.grade}</Text>
                       </View>
-                      <Text category='h5' style={styles.headerText}>{route.name}</Text>
+                      <Text category='h5' style={styles.headerText}>
+                        {route.name.length > 15 ? `${route.name.substring(0, 12)}...` : route.name}
+                      </Text>
                     </View>
                   </View>
                   <View style={styles.headerButtons}>
@@ -268,8 +270,8 @@ const LogWorkoutScreen: React.FC = () => {
           onPress={handleShowModal}
         />
       </View>
-      <AddRouteSheet
-        visible={isAddRouteSheetVisible}
+      <AddRouteModal
+        visible={isAddRouteModalVisible}
         onClose={handleHideModal}
         onAddRoute={handleAddRoute}
         route={editRouteIndex !== null ? routes[editRouteIndex] : undefined}
