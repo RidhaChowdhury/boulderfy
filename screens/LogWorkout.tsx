@@ -29,6 +29,16 @@ const LogWorkoutScreen: React.FC = () => {
   const scrollViewRefs = useRef<Array<ScrollView | null>>([]);
   const soundRef = useRef<Audio.Sound | null>(null);
 
+  const getStatus = (attempts: string[]) => {
+    if (attempts.includes('repeat') || attempts.includes('flash')) {
+      return 'done';
+    } else if (attempts.length > 0) {
+      return 'checked';
+    } else {
+      return 'initial';
+    }
+  };
+
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -167,7 +177,7 @@ const LogWorkoutScreen: React.FC = () => {
   return (
     <Layout style={styles.container}>
       <View style={styles.headerContainer}>
-        <Text category='h1'>Log Workout</Text>
+        <Text category='h2'>Log Workout</Text>
         <View style={styles.timerContainer}>
           <Text
             style={[
@@ -187,14 +197,14 @@ const LogWorkoutScreen: React.FC = () => {
           routes.map((route, index) => (
             <React.Fragment key={index}>
               {index > 0 && <Divider style={{ backgroundColor: '#323f67' }} />}
-              <Card style={styles.routeContainer} disabled={true}>
+              <View style={styles.routeContainer}>
                 <View style={styles.headerFields}>
                   <View style={styles.customHeader}>
                     <View style={styles.headerContainer}>
                       <View style={[styles.colorCircle, { backgroundColor: route.color + 'AA' || '#FFFFFF'}]}>
                         <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '800' }}>{route.grade}</Text>
                       </View>
-                      <Text category='h3' style={styles.headerText}>{route.name}</Text>
+                      <Text category='h5' style={styles.headerText}>{route.name}</Text>
                     </View>
                   </View>
                   <View style={styles.headerButtons}>
@@ -202,7 +212,7 @@ const LogWorkoutScreen: React.FC = () => {
                     <Button style={styles.editButton} accessoryLeft={TrashIcon} onPress={() => handleDeleteRoute(index)} />
                   </View>
                 </View>
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 8, gap: 8 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                   <ScrollView
                     horizontal
                     style={styles.attemptsContainer}
@@ -246,13 +256,12 @@ const LogWorkoutScreen: React.FC = () => {
                     startRestTimer={() => { if (autoRestEnabled) setIsResting(true); }}
                   />
                 </View>
-              </Card>
+              </View>
             </React.Fragment>
           ))
         )}
       </ScrollView>
       <View style={styles.buttonContainer}>
-        <Button style={styles.button}>Save Workout</Button>
         <Button
           style={styles.circularButton}
           accessoryLeft={PlusIcon}

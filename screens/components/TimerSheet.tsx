@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Button, ButtonGroup, Text, CheckBox, Icon, IconProps, IconElement } from '@ui-kitten/components';
 import * as Haptics from 'expo-haptics';
 import { Audio } from 'expo-av';
@@ -52,7 +53,22 @@ const TimerSheet: React.FC<TimerSheetProps> = ({
       soundRef.current = sound;
     };
 
+    const loadData = async () => {
+      try {
+        const storedAutoRestEnabled = await AsyncStorage.getItem('autoRestEnabled');
+        const storedHapticsEnabled = await AsyncStorage.getItem('hapticsEnabled');
+        const storedSoundEnabled = await AsyncStorage.getItem('soundEnabled');
+
+        if (storedAutoRestEnabled) setAutoRestEnabled(JSON.parse(storedAutoRestEnabled));
+        if (storedHapticsEnabled) setHapticsEnabled(JSON.parse(storedHapticsEnabled));
+        if (storedSoundEnabled) setSoundEnabled(JSON.parse(storedSoundEnabled));
+      } catch (e) {
+        console.error('Failed to load data', e);
+      }
+    };
+
     loadSound();
+    loadData();
 
     return () => {
       if (soundRef.current) {
@@ -62,10 +78,24 @@ const TimerSheet: React.FC<TimerSheetProps> = ({
   }, []);
 
   useEffect(() => {
-    if (autoRestEnabled && !isResting) {
-      setRestTime(restDuration);
+    const saveData = async () => {
+      try {
+        await AsyncStorage.setItem('autoRestEnabled', JSON.stringify(autoRestEnabled));
+        await AsyncStorage.setItem('hapticsEnabled', JSON.stringify(hapticsEnabled));
+        await AsyncStorage.setItem('soundEnabled', JSON.stringify(soundEnabled));
+      } catch (e) {
+        console.error('Failed to save data', e);
+      }
+    };
+
+    saveData();
+  }, [autoRestEnabled, hapticsEnabled, soundEnabled]);
+
+  useEffect(() => {
+    if (autoRestEnabled && isResting) {
+      startRestTimer();
     }
-  }, [autoRestEnabled, isResting, restDuration]);
+  }, [autoRestEnabled, isResting]);
 
   useEffect(() => {
     startSessionTimer();
