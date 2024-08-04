@@ -177,7 +177,7 @@ const LogWorkoutScreen: React.FC = () => {
   return (
     <Layout style={styles.container}>
       <View style={styles.headerContainer}>
-        <Text category='h2'>Log Workout</Text>
+        <Text category='h3'>Log Workout</Text>
         <View style={styles.timerContainer}>
           <Text
             style={[

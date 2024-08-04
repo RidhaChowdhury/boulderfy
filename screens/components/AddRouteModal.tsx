@@ -140,17 +140,19 @@ export const AddRouteModal = ({
           </View>
           <View>
             <Text style={styles.colorLabel}>Color</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.colorPicker}>
-              {holdColors.map((color, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={[
-                    styles.colorSwatch, 
-                    { backgroundColor: color, borderWidth: selectedColor === color ? 2 : 0, borderColor: 'white' }
-                  ]}
-                  onPress={() => setSelectedColor(color)}
-                />
-              ))}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.colorPickerContainer}>
+              <View style={styles.colorPicker}>
+                {holdColors.map((color, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={[
+                      styles.colorSwatch, 
+                      { backgroundColor: color, borderWidth: selectedColor === color ? 2 : 0, borderColor: 'white' }
+                    ]}
+                    onPress={() => setSelectedColor(color)}
+                  />
+                ))}
+              </View>
             </ScrollView>
           </View>
         </View>
@@ -168,7 +170,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     backgroundColor: '#2b3554',
-    marginHorizontal: 16,
+    maxWidth: '90%', // Limit modal width
   },
   fieldsContainer: {
     marginVertical: 16,
@@ -241,9 +243,12 @@ const styles = StyleSheet.create({
     marginTop: 16,
     gap: 8,
   },
+  colorPickerContainer: {
+    flexDirection: 'row',
+    overflow: 'hidden', // Prevent overflow outside the container
+  },
   colorPicker: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     paddingBottom: 8,
   },
   colorSwatch: {
