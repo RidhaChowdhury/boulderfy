@@ -4,11 +4,11 @@ import { Button, ButtonGroup, Icon, IconElement, IconProps } from '@ui-kitten/co
 import { styles } from '../../styles';
 import { attemptColors } from '../constants';
 
-const CancelIcon = (props: IconProps): IconElement => <Icon {...props} name='close' />;
-const FlashIcon = (props: IconProps): IconElement => <Icon {...props} name='flash-outline' />;
-const CheckIcon = (props: IconProps): IconElement => <Icon {...props} name='checkmark' />;
-const DoneAllIcon = (props: IconProps): IconElement => <Icon {...props} name='done-all-outline' />;
-const UndoIcon = (props: IconProps): IconElement => <Icon {...props} name='undo' />;
+const CancelIcon = (props: IconProps): IconElement => <Icon {...props} name='close' fill='#FFFFFF' />;
+const FlashIcon = (props: IconProps): IconElement => <Icon {...props} name='flash-outline' fill='#FFFFFF'/>;
+const CheckIcon = (props: IconProps): IconElement => <Icon {...props} name='checkmark' fill='#FFFFFF'/>;
+const DoneAllIcon = (props: IconProps): IconElement => <Icon {...props} name='done-all-outline' fill='#FFFFFF'/>;
+const UndoIcon = (props: IconProps): IconElement => <Icon {...props} name='undo' fill='#FFFFFF'/>;
 
 type FooterProps = ViewProps & {
   addAttempt: (attempt: string) => void;
@@ -34,7 +34,7 @@ export const RouteCardFooter = ({ addAttempt, undoAttempt, status, attempts, sta
 
   return (
     <View {...props} style={[props.style, styles.footerContainer]}>
-      <ButtonGroup style={styles.buttonGroup} size='small'>
+      <ButtonGroup style={styles.buttonGroup} appearance='ghost' size='small'>
         {/* <Button accessoryLeft={UndoIcon} onPress={undoAttempt} disabled={attempts.length === 0} style={attempts.length === 0 ? styles.disabledUndoButton : styles.undoButton} /> */}
         <Button style={{ backgroundColor: attemptColors.fail }} accessoryLeft={CancelIcon} onPress={() => { addAttempt('fail'); startRestTimer(); }} />
         {renderStatusButton()}

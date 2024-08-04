@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, View, ScrollView } from 'react-native';
-import { Button, ButtonGroup, Input, Select, SelectItem, IndexPath, Text } from '@ui-kitten/components';
+import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
+import { Modal, Button, ButtonGroup, Input, Select, SelectItem, IndexPath, Text } from '@ui-kitten/components';
 import { boulderGrades, topRopeGrades, holdColors, routeTags, tagColors, gradeColors } from '../constants';
 import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator';
-import BaseSheet from './BaseSheet';
 
-type AddRouteSheetProps = {
+type AddRouteModalProps = {
   visible: boolean,
   onClose: () => void,
   onAddRoute: (name: string, grade: string, color: string, tags: string[]) => void,
@@ -14,14 +13,14 @@ type AddRouteSheetProps = {
   setIsTopRope: React.Dispatch<React.SetStateAction<boolean>>,
 };
 
-export const AddRouteSheet = ({
+export const AddRouteModal = ({
   visible,
   onClose,
   onAddRoute,
   route,
   isTopRope,
   setIsTopRope,
-}: AddRouteSheetProps): React.ReactElement => {
+}: AddRouteModalProps): React.ReactElement => {
   const [routeName, setRouteName] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(new IndexPath(0));
   const [selectedColor, setSelectedColor] = useState('#FFFFFF');
@@ -75,7 +74,7 @@ export const AddRouteSheet = ({
   const gradeList = isTopRope ? topRopeGrades : boulderGrades;
 
   return (
-    <BaseSheet visible={visible} onClose={onClose} sheetName="AddRouteSheet" contentRef={contentRef}>
+    <Modal visible={visible} onBackdropPress={onClose} style={styles.modalContainer}>
       <View ref={contentRef}>
         <Text category='h4'>{route ? 'Edit Route' : 'Add Route'}</Text>
         <View style={styles.fieldsContainer}>
@@ -143,7 +142,7 @@ export const AddRouteSheet = ({
             <Text style={styles.colorLabel}>Color</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.colorPicker}>
               {holdColors.map((color, index) => (
-                <Button
+                <TouchableOpacity
                   key={index}
                   style={[
                     styles.colorSwatch, 
@@ -157,13 +156,20 @@ export const AddRouteSheet = ({
         </View>
         <View style={styles.buttonContainer}>
           <Button onPress={handleAddRoute}>{route ? 'UPDATE' : 'ADD'}</Button>
+          <Button appearance='ghost' status='basic' onPress={onClose}>Cancel</Button>
         </View>
       </View>
-    </BaseSheet>
+    </Modal>
   );
 };
 
 const styles = StyleSheet.create({
+  modalContainer: {
+    padding: 16,
+    borderRadius: 12,
+    backgroundColor: '#2b3554',
+    marginHorizontal: 16,
+  },
   fieldsContainer: {
     marginVertical: 16,
     gap: 8,
@@ -233,15 +239,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     marginTop: 16,
+    gap: 8,
   },
   colorPicker: {
     flexDirection: 'row',
-    minHeight: 50,
+    flexWrap: 'wrap',
+    paddingBottom: 8,
   },
   colorSwatch: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     marginHorizontal: 5,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
@@ -251,4 +259,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddRouteSheet;
+export default AddRouteModal;

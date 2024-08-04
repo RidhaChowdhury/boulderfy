@@ -1,11 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { View, ScrollView } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, ScrollView, AppState, AppStateStatus } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Layout, Text, Button, Card, Icon, IconElement, IconProps, IndexPath, Divider } from '@ui-kitten/components';
 import { Audio } from 'expo-av';
 import * as Haptics from 'expo-haptics';
 import { Route, boulderGrades, topRopeGrades, attemptColors } from './constants';
 import { RouteCardFooter } from './components/RouteCardFooter';
-import AddRouteSheet from './components/AddRouteSheet';
+import AddRouteModal from './components/AddRouteModal';
 import TimerSheet from './components/TimerSheet';
 import { styles } from '../styles';
 
@@ -16,11 +17,10 @@ const TrashIcon = (props: IconProps): IconElement => <Icon {...props} name='tras
 const LogWorkoutScreen: React.FC = () => {
   const [routes, setRoutes] = useState<Route[]>([]);
   const [selectedIndexes, setSelectedIndexes] = useState<IndexPath[]>([]);
-  const [isAddRouteSheetVisible, setAddRouteSheetVisible] = useState(false);
+  const [isAddRouteModalVisible, setAddRouteModalVisible] = useState(false);
   const [isTimerSheetVisible, setTimerSheetVisible] = useState(false);
   const [editRouteIndex, setEditRouteIndex] = useState<number | null>(null);
   const [isTopRope, setIsTopRope] = useState(false);
-
   const [sessionTime, setSessionTime] = useState(0);
   const [restTime, setRestTime] = useState(0);
   const [isResting, setIsResting] = useState(false);
@@ -29,22 +29,47 @@ const LogWorkoutScreen: React.FC = () => {
   const scrollViewRefs = useRef<Array<ScrollView | null>>([]);
   const soundRef = useRef<Audio.Sound | null>(null);
 
+  const getStatus = (attempts: string[]) => {
+    if (attempts.includes('repeat') || attempts.includes('flash')) {
+      return 'done';
+    } else if (attempts.length > 0) {
+      return 'checked';
+    } else {
+      return 'initial';
+    }
+  };
+
   useEffect(() => {
-    const loadSound = async () => {
-      const { sound } = await Audio.Sound.createAsync(
-        require('../assets/threeTone2.mp3')
-      );
-      soundRef.current = sound;
-    };
+    const loadData = async () => {
+      try {
+        const storedRoutes = await AsyncStorage.getItem('routes');
+        const storedSessionTime = await AsyncStorage.getItem('sessionTime');
+        const storedRestTime = await AsyncStorage.getItem('restTime');
 
-    loadSound();
-
-    return () => {
-      if (soundRef.current) {
-        soundRef.current.unloadAsync();
+        if (storedRoutes) setRoutes(JSON.parse(storedRoutes));
+        if (storedSessionTime) setSessionTime(parseInt(storedSessionTime || '0'));
+        if (storedRestTime) setRestTime(parseInt(storedRestTime || '0'));
+      } catch (e) {
+        console.error('Failed to load data', e);
       }
     };
+
+    loadData();
   }, []);
+
+  useEffect(() => {
+    const saveData = async () => {
+      try {
+        await AsyncStorage.setItem('routes', JSON.stringify(routes));
+        await AsyncStorage.setItem('sessionTime', sessionTime.toString());
+        await AsyncStorage.setItem('restTime', restTime.toString());
+      } catch (e) {
+        console.error('Failed to save data', e);
+      }
+    };
+
+    saveData();
+  }, [routes, sessionTime, restTime]);
 
   const handleAddRoute = (name: string, grade: string, color: string, tags: string[]) => {
     const newRoute = { name, grade, color, tags, attempts: [] };
@@ -55,7 +80,7 @@ const LogWorkoutScreen: React.FC = () => {
     } else {
       setRoutes([...routes, newRoute]);
     }
-    setAddRouteSheetVisible(false);
+    setAddRouteModalVisible(false);
   };
 
   const handleRouteChange = (index: number, key: keyof Route, value: string | string[]) => {
@@ -112,13 +137,13 @@ const LogWorkoutScreen: React.FC = () => {
   };
 
   const handleShowModal = () => {
-    setAddRouteSheetVisible(true);
+    setAddRouteModalVisible(true);
     setEditRouteIndex(null);
   };
 
   const handleEditRoute = (index: number) => {
     setEditRouteIndex(index);
-    setAddRouteSheetVisible(true);
+    setAddRouteModalVisible(true);
   };
 
   const handleDeleteRoute = (index: number) => {
@@ -127,23 +152,13 @@ const LogWorkoutScreen: React.FC = () => {
   };
 
   const handleHideModal = () => {
-    setAddRouteSheetVisible(false);
+    setAddRouteModalVisible(false);
     setEditRouteIndex(null);
-  };
-
-  const getStatus = (attempts: string[]) => {
-    if (attempts.includes('repeat') || attempts.includes('flash')) {
-      return 'done';
-    } else if (attempts.length > 0) {
-      return 'checked';
-    } else {
-      return 'initial';
-    }
   };
 
   const toggleTimerSheet = () => {
     setTimerSheetVisible(true);
-    setAddRouteSheetVisible(false);
+    setAddRouteModalVisible(false);
   };
 
   const formatSessionTime = (seconds: number) => {
@@ -162,7 +177,7 @@ const LogWorkoutScreen: React.FC = () => {
   return (
     <Layout style={styles.container}>
       <View style={styles.headerContainer}>
-        <Text category='h1'>Log Workout</Text>
+        <Text category='h2'>Log Workout</Text>
         <View style={styles.timerContainer}>
           <Text
             style={[
@@ -182,14 +197,16 @@ const LogWorkoutScreen: React.FC = () => {
           routes.map((route, index) => (
             <React.Fragment key={index}>
               {index > 0 && <Divider style={{ backgroundColor: '#323f67' }} />}
-              <Card style={styles.routeContainer} disabled={true}>
+              <View style={styles.routeContainer}>
                 <View style={styles.headerFields}>
                   <View style={styles.customHeader}>
                     <View style={styles.headerContainer}>
                       <View style={[styles.colorCircle, { backgroundColor: route.color + 'AA' || '#FFFFFF'}]}>
                         <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '800' }}>{route.grade}</Text>
                       </View>
-                      <Text category='h3' style={styles.headerText}>{route.name}</Text>
+                      <Text category='h5' style={styles.headerText}>
+                        {route.name.length > 15 ? `${route.name.substring(0, 12)}...` : route.name}
+                      </Text>
                     </View>
                   </View>
                   <View style={styles.headerButtons}>
@@ -197,7 +214,7 @@ const LogWorkoutScreen: React.FC = () => {
                     <Button style={styles.editButton} accessoryLeft={TrashIcon} onPress={() => handleDeleteRoute(index)} />
                   </View>
                 </View>
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 8, gap: 8 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                   <ScrollView
                     horizontal
                     style={styles.attemptsContainer}
@@ -241,21 +258,20 @@ const LogWorkoutScreen: React.FC = () => {
                     startRestTimer={() => { if (autoRestEnabled) setIsResting(true); }}
                   />
                 </View>
-              </Card>
+              </View>
             </React.Fragment>
           ))
         )}
       </ScrollView>
       <View style={styles.buttonContainer}>
-        <Button style={styles.button}>Save Workout</Button>
         <Button
           style={styles.circularButton}
           accessoryLeft={PlusIcon}
           onPress={handleShowModal}
         />
       </View>
-      <AddRouteSheet
-        visible={isAddRouteSheetVisible}
+      <AddRouteModal
+        visible={isAddRouteModalVisible}
         onClose={handleHideModal}
         onAddRoute={handleAddRoute}
         route={editRouteIndex !== null ? routes[editRouteIndex] : undefined}
