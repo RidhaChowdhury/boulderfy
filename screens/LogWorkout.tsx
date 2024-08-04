@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { View, ScrollView } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, ScrollView, AppState, AppStateStatus } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Layout, Text, Button, Card, Icon, IconElement, IconProps, IndexPath, Divider } from '@ui-kitten/components';
 import { Audio } from 'expo-av';
 import * as Haptics from 'expo-haptics';
@@ -20,7 +21,6 @@ const LogWorkoutScreen: React.FC = () => {
   const [isTimerSheetVisible, setTimerSheetVisible] = useState(false);
   const [editRouteIndex, setEditRouteIndex] = useState<number | null>(null);
   const [isTopRope, setIsTopRope] = useState(false);
-
   const [sessionTime, setSessionTime] = useState(0);
   const [restTime, setRestTime] = useState(0);
   const [isResting, setIsResting] = useState(false);
@@ -30,21 +30,36 @@ const LogWorkoutScreen: React.FC = () => {
   const soundRef = useRef<Audio.Sound | null>(null);
 
   useEffect(() => {
-    const loadSound = async () => {
-      const { sound } = await Audio.Sound.createAsync(
-        require('../assets/threeTone2.mp3')
-      );
-      soundRef.current = sound;
-    };
+    const loadData = async () => {
+      try {
+        const storedRoutes = await AsyncStorage.getItem('routes');
+        const storedSessionTime = await AsyncStorage.getItem('sessionTime');
+        const storedRestTime = await AsyncStorage.getItem('restTime');
 
-    loadSound();
-
-    return () => {
-      if (soundRef.current) {
-        soundRef.current.unloadAsync();
+        if (storedRoutes) setRoutes(JSON.parse(storedRoutes));
+        if (storedSessionTime) setSessionTime(parseInt(storedSessionTime || '0'));
+        if (storedRestTime) setRestTime(parseInt(storedRestTime || '0'));
+      } catch (e) {
+        console.error('Failed to load data', e);
       }
     };
+
+    loadData();
   }, []);
+
+  useEffect(() => {
+    const saveData = async () => {
+      try {
+        await AsyncStorage.setItem('routes', JSON.stringify(routes));
+        await AsyncStorage.setItem('sessionTime', sessionTime.toString());
+        await AsyncStorage.setItem('restTime', restTime.toString());
+      } catch (e) {
+        console.error('Failed to save data', e);
+      }
+    };
+
+    saveData();
+  }, [routes, sessionTime, restTime]);
 
   const handleAddRoute = (name: string, grade: string, color: string, tags: string[]) => {
     const newRoute = { name, grade, color, tags, attempts: [] };
@@ -129,16 +144,6 @@ const LogWorkoutScreen: React.FC = () => {
   const handleHideModal = () => {
     setAddRouteSheetVisible(false);
     setEditRouteIndex(null);
-  };
-
-  const getStatus = (attempts: string[]) => {
-    if (attempts.includes('repeat') || attempts.includes('flash')) {
-      return 'done';
-    } else if (attempts.length > 0) {
-      return 'checked';
-    } else {
-      return 'initial';
-    }
   };
 
   const toggleTimerSheet = () => {
