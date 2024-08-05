@@ -50,9 +50,13 @@ export const gradeColors: { [key: string]: string } = {
   '5.14': '#696969', // Less bright dark grey
 };
 
-export const routeTags = ['crimpy', 'dyno', 'overhang'];
+export const routeTags = ['crimpy', 'dyno', 'overhang', 'slab', 'juggy', 'technical', 'powerful'];
 export const tagColors: { [key: string]: string } = {
   crimpy: '#CC6666', // Less bright red
   dyno: '#66CC66',   // Less bright green
   overhang: '#6666CC', // Less bright blue
+  slab: '#CCCC66',   // Less bright yellow
+  juggy: '#CC66CC',  // Less bright pink
+  technical: '#CC9966', // Less bright orange
+  powerful: '#666666', // Less bright black (grey)
 };

@@ -26,7 +26,7 @@ export const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    marginBottom: 60, // Ensure there is space for the buttons
+    // marginBottom: 60, // Ensure there is space for the buttons
   },
   customHeader: {
     alignItems: 'flex-start', // Align text to the left
@@ -85,6 +85,17 @@ export const styles = StyleSheet.create({
     borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  addButton: {
+    position: 'absolute',
+    right: 16,
+    bottom: 16,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#3366FF',
   },
   footerContainer: {
     flexDirection: 'row',

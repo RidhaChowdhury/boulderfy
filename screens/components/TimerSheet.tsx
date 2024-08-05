@@ -98,10 +98,15 @@ const TimerSheet: React.FC<TimerSheetProps> = ({
   }, [autoRestEnabled, isResting]);
 
   useEffect(() => {
-    startSessionTimer();
+    if (!isPaused) {
+      startSessionTimer();
+      if (isResting) {
+        startRestTimer();
+      }
+    }
     return () => {
-      clearInterval(sessionInterval.current as NodeJS.Timeout);
-      clearInterval(restInterval.current as NodeJS.Timeout);
+      if (sessionInterval.current) clearInterval(sessionInterval.current);
+      if (restInterval.current) clearInterval(restInterval.current);
     };
   }, [isPaused]);
 
@@ -109,56 +114,58 @@ const TimerSheet: React.FC<TimerSheetProps> = ({
   const restInterval = useRef<NodeJS.Timeout | null>(null);
 
   const startSessionTimer = () => {
-    if (sessionInterval.current) {
-      clearInterval(sessionInterval.current);
-    }
+    if (sessionInterval.current) clearInterval(sessionInterval.current!);
     sessionInterval.current = setInterval(() => {
       setSessionTime(prevTime => prevTime + 1);
     }, 1000);
   };
 
   const startRestTimer = () => {
-    if (restInterval.current) {
-      clearInterval(restInterval.current);
-    }
+    if (restInterval.current) clearInterval(restInterval.current!);
     restInterval.current = setInterval(() => {
       setRestTime(prevTime => {
         if (prevTime > 0) {
           return prevTime - 1;
         } else {
+          clearInterval(restInterval.current!);
           setIsResting(false);
-          if (Platform.OS !== 'web' && hapticsEnabled) {
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          }
-          if (soundEnabled) {
-            soundRef.current?.playAsync();
-          }
-          clearInterval(restInterval.current as NodeJS.Timeout);
+          handleTimerEnd(); // Call this to play sound, haptics, etc.
           return restDuration;
         }
       });
     }, 1000);
   };
 
+  const handleTimerEnd = () => {
+    if (Platform.OS !== 'web' && hapticsEnabled) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+    if (soundEnabled) {
+      soundRef.current?.playAsync();
+    }
+  };
+
   const handlePausePlay = () => {
     if (isPaused) {
-      startSessionTimer();
       if (isResting) {
-        startRestTimer();
+        startRestTimer(); // Restart rest timer
+      } else {
+        startSessionTimer(); // Restart session timer
       }
     } else {
-      clearInterval(sessionInterval.current as NodeJS.Timeout);
-      clearInterval(restInterval.current as NodeJS.Timeout);
+      if (sessionInterval.current) clearInterval(sessionInterval.current!);
+      if (restInterval.current) clearInterval(restInterval.current!);
     }
     setIsPaused(!isPaused);
   };
 
   const handleStartSkipRest = () => {
-    if (!isResting) {
-      setRestTime(restDuration);
-      startRestTimer();
+    if (isResting) {
+      if (restInterval.current) clearInterval(restInterval.current!); // Clear the current interval
+      setRestTime(restDuration); // Reset to full rest duration
     } else {
-      clearInterval(restInterval.current as NodeJS.Timeout);
+      setRestTime(restDuration); // Start rest timer from the full duration
+      startRestTimer(); // Start the rest timer
     }
     setIsResting(!isResting);
     setIsPaused(false);

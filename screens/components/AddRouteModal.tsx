@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
-import { Modal, Button, ButtonGroup, Input, Select, SelectItem, IndexPath, Text } from '@ui-kitten/components';
-import { boulderGrades, topRopeGrades, holdColors, routeTags, tagColors, gradeColors } from '../constants';
+import { Modal, Animated, View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { Input, Select, SelectItem, IndexPath, Text, Button, ButtonGroup } from '@ui-kitten/components';
+import { boulderGrades, topRopeGrades, routeTags, gradeColors, tagColors, holdColors } from '../constants';
 import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator';
 
 type AddRouteModalProps = {
@@ -13,7 +13,7 @@ type AddRouteModalProps = {
   setIsTopRope: React.Dispatch<React.SetStateAction<boolean>>,
 };
 
-export const AddRouteModal = ({
+const AddRouteModal = ({
   visible,
   onClose,
   onAddRoute,
@@ -25,7 +25,7 @@ export const AddRouteModal = ({
   const [selectedIndex, setSelectedIndex] = useState(new IndexPath(0));
   const [selectedColor, setSelectedColor] = useState('#FFFFFF');
   const [selectedTags, setSelectedTags] = useState<IndexPath[]>([]);
-  const contentRef = useRef<View>(null);
+  const scaleValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (route) {
@@ -71,77 +71,92 @@ export const AddRouteModal = ({
     onClose();
   };
 
+  useEffect(() => {
+    if (visible) {
+      Animated.spring(scaleValue, {
+        toValue: 1,
+        useNativeDriver: true,
+        friction: 10,
+        tension: 100,
+      }).start();
+    } else {
+      Animated.timing(scaleValue, {
+        toValue: 0,
+        duration: 100,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [visible]);
+
   const gradeList = isTopRope ? topRopeGrades : boulderGrades;
 
   return (
-    <Modal visible={visible} onBackdropPress={onClose} style={styles.modalContainer}>
-      <View ref={contentRef}>
-        <Text category='h4'>{route ? 'Edit Route' : 'Add Route'}</Text>
-        <View style={styles.fieldsContainer}>
-          <View style={styles.inputContainer}>
-            <View style={styles.toggleContainer}>
-              <Text category='label' style={styles.colorLabel}>Route Style</Text>
-              <ButtonGroup style={styles.buttonGroup} size='small'>
-                <Button
-                  style={[styles.button, isTopRope ? styles.buttonSelected : styles.buttonUnselected]}
-                  onPress={() => setIsTopRope(true)}
-                >
-                  Top Rope
-                </Button>
-                <Button
-                  style={[styles.button, !isTopRope ? styles.buttonSelected : styles.buttonUnselected]}
-                  onPress={() => setIsTopRope(false)}
-                >
-                  Boulder
-                </Button>
-              </ButtonGroup>
+    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
+      <View style={styles.modalBackground}>
+        <Animated.View style={[styles.modalContainer, { transform: [{ scale: scaleValue }] }]}>
+          <Text category="h4">{route ? 'Edit Route' : 'Add Route'}</Text>
+          <View style={styles.fieldsContainer}>
+            <View style={styles.inputContainer}>
+              <View style={styles.toggleContainer}>
+                <Text category="label" style={styles.colorLabel}>Route Style</Text>
+                <ButtonGroup style={styles.buttonGroup} size="small">
+                  <Button
+                    style={[styles.button, isTopRope ? styles.buttonSelected : styles.buttonUnselected]}
+                    onPress={() => setIsTopRope(true)}
+                  >
+                    Top Rope
+                  </Button>
+                  <Button
+                    style={[styles.button, !isTopRope ? styles.buttonSelected : styles.buttonUnselected]}
+                    onPress={() => setIsTopRope(false)}
+                  >
+                    Boulder
+                  </Button>
+                </ButtonGroup>
+              </View>
+              <Input
+                label="Route Name"
+                placeholder="Enter route name"
+                value={routeName}
+                onChangeText={setRouteName}
+                style={styles.routeNameInput}
+              />
             </View>
-            <Input
-              label="Route Name"
-              placeholder="Enter route name"
-              value={routeName}
-              onChangeText={setRouteName}
-              style={styles.routeNameInput}
-            />
-          </View>
-          <View style={styles.gradeAndTagsContainer}>
-            <Select
-              label="Grade"
-              placeholder="Select grade"
-              value={gradeList[selectedIndex.row]}
-              selectedIndex={selectedIndex}
-              onSelect={index => setSelectedIndex(index as IndexPath)}
-              style={styles.gradeSelect}
-            >
-              {gradeList.map((grade, index) => (
-                <SelectItem
-                  key={index}
-                  title={grade}
-                  style={[styles.selectItem, { backgroundColor: gradeColors[grade] }]}
-                />
-              ))}
-            </Select>
-            <Select
-              multiSelect
-              value={selectedTags.map(indexPath => routeTags[indexPath.row]).join(', ')}
-              selectedIndex={selectedTags}
-              onSelect={index => setSelectedTags(index as IndexPath[])}
-              style={styles.multiSelect}
-              label={'Tags'}
-            >
-              {routeTags.map((tag, index) => (
-                <SelectItem
-                  key={index}
-                  title={tag}
-                  style={[styles.selectItem, { backgroundColor: tagColors[tag] }]}
-                />
-              ))}
-            </Select>
-          </View>
-          <View>
-            <Text style={styles.colorLabel}>Color</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.colorPickerContainer}>
-              <View style={styles.colorPicker}>
+            <View style={styles.gradeAndTagsContainer}>
+              <Select
+                label="Grade"
+                placeholder="Select grade"
+                value={gradeList[selectedIndex.row]}
+                selectedIndex={selectedIndex}
+                onSelect={index => setSelectedIndex(index as IndexPath)}
+                style={styles.gradeSelect}
+              >
+                {gradeList.map((grade, index) => (
+                  <SelectItem
+                    key={index}
+                    title={grade}
+                  />
+                ))}
+              </Select>
+              <Select
+                multiSelect
+                value={selectedTags.map(indexPath => routeTags[indexPath.row]).join(', ')}
+                selectedIndex={selectedTags}
+                onSelect={index => setSelectedTags(index as IndexPath[])}
+                style={styles.multiSelect}
+                label={'Tags'}
+              >
+                {routeTags.map((tag, index) => (
+                  <SelectItem
+                    key={index}
+                    title={tag}
+                  />
+                ))}
+              </Select>
+            </View>
+            <View>
+              <Text style={styles.colorLabel}>Color</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.colorPicker}>
                 {holdColors.map((color, index) => (
                   <TouchableOpacity
                     key={index}
@@ -152,25 +167,37 @@ export const AddRouteModal = ({
                     onPress={() => setSelectedColor(color)}
                   />
                 ))}
-              </View>
-            </ScrollView>
+              </ScrollView>
+            </View>
           </View>
-        </View>
-        <View style={styles.buttonContainer}>
-          <Button onPress={handleAddRoute}>{route ? 'UPDATE' : 'ADD'}</Button>
-          <Button appearance='ghost' status='basic' onPress={onClose}>Cancel</Button>
-        </View>
+          <View style={styles.buttonContainer}>
+            <Button onPress={handleAddRoute}>
+              {route ? 'UPDATE' : 'ADD'}
+            </Button>
+            <Button appearance="ghost" status="basic" onPress={onClose}>
+              Cancel
+            </Button>
+          </View>
+        </Animated.View>
       </View>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
+  modalBackground: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
   modalContainer: {
     padding: 16,
     borderRadius: 12,
     backgroundColor: '#2b3554',
-    maxWidth: '90%', // Limit modal width
+    marginHorizontal: 16,
+    maxWidth: '90%',  // Ensure the modal doesn't take up the full screen width
+    alignSelf: 'center',  // Center the modal horizontally
   },
   fieldsContainer: {
     marginVertical: 16,
@@ -243,12 +270,9 @@ const styles = StyleSheet.create({
     marginTop: 16,
     gap: 8,
   },
-  colorPickerContainer: {
-    flexDirection: 'row',
-    overflow: 'hidden', // Prevent overflow outside the container
-  },
   colorPicker: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     paddingBottom: 8,
   },
   colorSwatch: {

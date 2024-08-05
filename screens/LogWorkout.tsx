@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, ScrollView, AppState, AppStateStatus } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Layout, Text, Button, Card, Icon, IconElement, IconProps, IndexPath, Divider } from '@ui-kitten/components';
+import { Layout, Text, Button, Icon, IconElement, IconProps, IndexPath, Divider } from '@ui-kitten/components';
 import { Audio } from 'expo-av';
 import * as Haptics from 'expo-haptics';
 import { Route, boulderGrades, topRopeGrades, attemptColors } from './constants';
@@ -263,13 +263,11 @@ const LogWorkoutScreen: React.FC = () => {
           ))
         )}
       </ScrollView>
-      <View style={styles.buttonContainer}>
-        <Button
-          style={styles.circularButton}
-          accessoryLeft={PlusIcon}
-          onPress={handleShowModal}
-        />
-      </View>
+      <Button
+        style={styles.addButton}
+        accessoryLeft={PlusIcon}
+        onPress={handleShowModal}
+      />
       <AddRouteModal
         visible={isAddRouteModalVisible}
         onClose={handleHideModal}
