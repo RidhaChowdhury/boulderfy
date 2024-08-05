@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, ScrollView, AppState, AppStateStatus } from 'react-native';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { View, ScrollView, Animated, Easing } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Layout, Text, Button, Icon, IconElement, IconProps, IndexPath, Divider } from '@ui-kitten/components';
 import { Audio } from 'expo-av';
@@ -25,9 +25,52 @@ const LogWorkoutScreen: React.FC = () => {
   const [restTime, setRestTime] = useState(0);
   const [isResting, setIsResting] = useState(false);
   const [autoRestEnabled, setAutoRestEnabled] = useState(false);
+  const [lastAddedAttempt, setLastAddedAttempt] = useState<{ routeIndex: number, attemptIndex: number } | null>(null);
 
   const scrollViewRefs = useRef<Array<ScrollView | null>>([]);
   const soundRef = useRef<Audio.Sound | null>(null);
+
+  // Initialize animation values only for the newly added attempt
+  const animationValues = useMemo(() => {
+    return routes.map(route =>
+      route.attempts.map(() => ({
+        bounceAnim: new Animated.Value(1), // Default scale is 1, no animation
+        dropAnim: new Animated.Value(0), // Default position is 0, no drop
+      }))
+    );
+  }, [routes]);
+
+  useEffect(() => {
+    if (lastAddedAttempt) {
+      const { routeIndex, attemptIndex } = lastAddedAttempt;
+
+      // Ensure that the indices are within the bounds of the animationValues array
+      if (
+        animationValues[routeIndex] &&
+        animationValues[routeIndex][attemptIndex]
+      ) {
+        const attempt = routes[routeIndex].attempts[attemptIndex];
+
+        if (attempt === 'flash') {
+          animationValues[routeIndex][attemptIndex].dropAnim.setValue(-50); // Start off-screen
+          Animated.timing(animationValues[routeIndex][attemptIndex].dropAnim, {
+            toValue: 0,
+            useNativeDriver: true,
+            duration: 300,
+            easing: Easing.linear,
+          }).start();
+        } else {
+          animationValues[routeIndex][attemptIndex].bounceAnim.setValue(0); // Start small
+          Animated.spring(animationValues[routeIndex][attemptIndex].bounceAnim, {
+            toValue: 1,
+            useNativeDriver: true,
+            friction: 5,
+            tension: 150,
+          }).start();
+        }
+      }
+    }
+  }, [lastAddedAttempt, routes, animationValues]);
 
   const getStatus = (attempts: string[]) => {
     if (attempts.includes('repeat') || attempts.includes('flash')) {
@@ -81,6 +124,7 @@ const LogWorkoutScreen: React.FC = () => {
       setRoutes([...routes, newRoute]);
     }
     setAddRouteModalVisible(false);
+    setLastAddedAttempt(null); // Reset the last added attempt to prevent unintended animations
   };
 
   const handleRouteChange = (index: number, key: keyof Route, value: string | string[]) => {
@@ -117,6 +161,7 @@ const LogWorkoutScreen: React.FC = () => {
     }
 
     setRoutes(newRoutes);
+    setLastAddedAttempt({ routeIndex: index, attemptIndex: currentAttempts.length - 1 });
 
     setTimeout(() => {
       scrollViewRefs.current[index]?.scrollToEnd({ animated: true });
@@ -194,9 +239,9 @@ const LogWorkoutScreen: React.FC = () => {
         {routes.length === 0 ? (
           <Text category='p1' style={styles.noRoutesText}>No routes added yet. Press the plus button to add a new route.</Text>
         ) : (
-          routes.map((route, index) => (
-            <React.Fragment key={index}>
-              {index > 0 && <Divider style={{ backgroundColor: '#323f67' }} />}
+          routes.map((route, routeIndex) => (
+            <React.Fragment key={routeIndex}>
+              {routeIndex > 0 && <Divider style={{ backgroundColor: '#323f67' }} />}
               <View style={styles.routeContainer}>
                 <View style={styles.headerFields}>
                   <View style={styles.customHeader}>
@@ -210,29 +255,39 @@ const LogWorkoutScreen: React.FC = () => {
                     </View>
                   </View>
                   <View style={styles.headerButtons}>
-                    <Button style={styles.editButton} accessoryLeft={EditIcon} onPress={() => handleEditRoute(index)} />
-                    <Button style={styles.editButton} accessoryLeft={TrashIcon} onPress={() => handleDeleteRoute(index)} />
+                    <Button style={styles.editButton} accessoryLeft={EditIcon} onPress={() => handleEditRoute(routeIndex)} />
+                    <Button style={styles.editButton} accessoryLeft={TrashIcon} onPress={() => handleDeleteRoute(routeIndex)} />
                   </View>
                 </View>
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                   <ScrollView
                     horizontal
                     style={styles.attemptsContainer}
-                    ref={el => (scrollViewRefs.current[index] = el)}
+                    ref={el => (scrollViewRefs.current[routeIndex] = el)}
                   >
-                    {route.attempts.map((attempt: string, attemptIndex: number) => (
-                      <Icon
-                        key={attemptIndex}
-                        name={
-                          attempt === 'fail' ? 'close' :
-                          attempt === 'flash' ? 'flash-outline' :
-                          attempt === 'repeat' ? 'done-all-outline' :
-                          'checkmark'
-                        }
-                        style={styles.attemptIcon}
-                        fill={attemptColors[attempt]}
-                      />
-                    ))}
+                    {route.attempts.map((attempt: string, attemptIndex: number) => {
+                      const { bounceAnim, dropAnim } = animationValues[routeIndex][attemptIndex];
+
+                      return (
+                        <Animated.View
+                          key={attemptIndex}
+                          style={attempt === 'flash'
+                            ? { transform: [{ translateY: dropAnim }] }
+                            : { transform: [{ scale: bounceAnim }] }
+                          }>
+                          <Icon
+                            name={
+                              attempt === 'fail' ? 'close' :
+                              attempt === 'flash' ? 'flash-outline' :
+                              attempt === 'repeat' ? 'done-all-outline' :
+                              'checkmark'
+                            }
+                            style={styles.attemptIcon}
+                            fill={attemptColors[attempt]}
+                          />
+                        </Animated.View>
+                      );
+                    })}
                     {route.attempts.length < 2 && [0.2, 0.1, 0.05].slice(0, 3 - route.attempts.length).map((opacity, index) => (
                       <Icon
                         key={`dot-${index}`}
@@ -251,8 +306,8 @@ const LogWorkoutScreen: React.FC = () => {
                     )}
                   </ScrollView>
                   <RouteCardFooter 
-                    addAttempt={(attempt: string) => addAttempt(index, attempt)} 
-                    undoAttempt={() => undoAttempt(index)} 
+                    addAttempt={(attempt: string) => addAttempt(routeIndex, attempt)} 
+                    undoAttempt={() => undoAttempt(routeIndex)} 
                     status={getStatus(route.attempts)} 
                     attempts={route.attempts} 
                     startRestTimer={() => { if (autoRestEnabled) setIsResting(true); }}
